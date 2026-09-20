@@ -6,6 +6,7 @@
 <title>Lektionenplaner</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Nunito:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 :root{
   --bg:#fbeff0;
@@ -209,7 +210,7 @@ textarea, input, select{font-family:inherit; font-size:inherit; color:var(--text
 .banner.err{background:var(--danger-soft); color:var(--danger);}
 .print-sheet .ps-head{display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--text); padding-bottom:10px; margin-bottom:16px;}
 .print-sheet .ps-head h2{font-size:1.3rem;}
-.print-sheet .ps-lesson{border:1px solid var(--border); border-radius:var(--radius-m); padding:14px; margin-bottom:14px; break-inside:avoid;}
+.print-sheet .ps-lesson{border:1px solid var(--border); border-radius:var(--radius-m); padding:14px; margin-bottom:14px;}
 .print-sheet .ps-lesson h3{font-size:1rem; margin-bottom:2px;}
 .print-sheet .ps-lesson .ps-meta{font-size:.8rem; color:var(--text-muted); font-family:"IBM Plex Mono",monospace; margin-bottom:8px;}
 .print-sheet .ps-field{margin-bottom:8px;}
@@ -245,226 +246,6 @@ var WEEKDAYS = [
 var PHASES = ["Einstieg","Erarbeitung","Übung/Vertiefung","Sicherung","Abschluss","Reflexion","Sonstiges"];
 var SOZIALFORMEN = ["Plenum","EA","PA","GA"];
 var LP21_PORTAL = "https://www.lehrplan.ch/";
-
-var HEAD_HTML = '<meta charset="UTF-8">\n'+
-'<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'+
-'<title>Lektionenplaner</title>\n'+
-'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Nunito:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">\n'+
-'<style>\n'+
-':root{\n'+
-'  --bg:#fbeff0;\n'+
-'  --surface:#fffbfb;\n'+
-'  --surface-2:#f6e2e5;\n'+
-'  --border:#edced2;\n'+
-'  --text:#3c262a;\n'+
-'  --text-muted:#8f6a6f;\n'+
-'  --accent:#b5495f;\n'+
-'  --accent-strong:#8f3547;\n'+
-'  --accent-soft:#f4dbe1;\n'+
-'  --good:#7c9473;\n'+
-'  --good-soft:#e7ecdf;\n'+
-'  --warn:#bf8a4a;\n'+
-'  --warn-soft:#f7ecd8;\n'+
-'  --danger:#ab4a51;\n'+
-'  --danger-soft:#f5dcdd;\n'+
-'  --shadow:0 8px 24px rgba(120,40,58,.12), 0 2px 6px rgba(120,40,58,.07);\n'+
-'  --radius-s:12px;\n'+
-'  --radius-m:16px;\n'+
-'  --radius-l:22px;\n'+
-'  padding-top:env(safe-area-inset-top,0px);\n'+
-'  padding-bottom:env(safe-area-inset-bottom,0px);\n'+
-'}\n'+
-'@media (prefers-color-scheme: dark){\n'+
-'  :root:not([data-theme="light"]){\n'+
-'    --bg:#241418;\n'+
-'    --surface:#2f1c21;\n'+
-'    --surface-2:#3a232a;\n'+
-'    --border:#4a2c34;\n'+
-'    --text:#f4e4e6;\n'+
-'    --text-muted:#c99ca2;\n'+
-'    --accent:#e58fa1;\n'+
-'    --accent-strong:#f2b0bc;\n'+
-'    --accent-soft:#472530;\n'+
-'    --good:#9dba8f;\n'+
-'    --good-soft:#2c3527;\n'+
-'    --warn:#e0b15c;\n'+
-'    --warn-soft:#3a2e17;\n'+
-'    --danger:#e2917f;\n'+
-'    --danger-soft:#3a2420;\n'+
-'    --shadow:0 8px 24px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.3);\n'+
-'  }\n'+
-'}\n'+
-':root[data-theme="dark"]{\n'+
-'  --bg:#241418;\n'+
-'  --surface:#2f1c21;\n'+
-'  --surface-2:#3a232a;\n'+
-'  --border:#4a2c34;\n'+
-'  --text:#f4e4e6;\n'+
-'  --text-muted:#c99ca2;\n'+
-'  --accent:#e58fa1;\n'+
-'  --accent-strong:#f2b0bc;\n'+
-'  --accent-soft:#472530;\n'+
-'  --good:#9dba8f;\n'+
-'  --good-soft:#2c3527;\n'+
-'  --warn:#e0b15c;\n'+
-'  --warn-soft:#3a2e17;\n'+
-'  --danger:#e2917f;\n'+
-'  --danger-soft:#3a2420;\n'+
-'  --shadow:0 8px 24px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.3);\n'+
-'}\n'+
-'*{box-sizing:border-box;}\n'+
-'html,body{height:100%;}\n'+
-'body{\n'+
-'  margin:0;\n'+
-'  background:var(--bg);\n'+
-'  color:var(--text);\n'+
-'  font-family:"Nunito", -apple-system, BlinkMacSystemFont, sans-serif;\n'+
-'  font-size:14.5px;\n'+
-'  line-height:1.5;\n'+
-'}\n'+
-'[hidden]{display:none!important;}\n'+
-'img{max-width:100%;}\n'+
-'h1,h2,h3{font-family:"Fraunces", Georgia, serif; text-wrap:balance; margin:0;}\n'+
-'.mono{font-family:"IBM Plex Mono", ui-monospace, monospace; font-variant-numeric:tabular-nums;}\n'+
-'a{color:var(--accent-strong);}\n'+
-'button{font-family:inherit;font-size:inherit;}\n'+
-'textarea, input, select{font-family:inherit; font-size:inherit; color:var(--text);}\n'+
-'::selection{background:var(--accent-soft);}\n'+
-'.wrap{max-width:1760px;margin:0 auto;padding:0 24px 64px;}\n'+
-'.topbar{position:sticky; top:env(safe-area-inset-top,0px); z-index:30; background:var(--bg); border-bottom:1px solid var(--border); padding-block:9px;}\n'+
-'.topbar-inner{max-width:1760px;margin:0 auto;padding:0 24px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;}\n'+
-'.brand{display:flex; flex-direction:column; gap:2px; margin-right:auto;}\n'+
-'.brand h1{font-size:1.35rem; font-weight:600; letter-spacing:.2px;}\n'+
-'.brand .sub{font-size:.8rem; color:var(--text-muted);}\n'+
-'.brand .sub button{background:none;border:none;color:var(--text-muted);text-decoration:underline dotted;cursor:pointer;padding:0;font-size:inherit;}\n'+
-'.pill{display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:999px; font-size:.78rem; font-weight:600; white-space:nowrap;}\n'+
-'.pill-edit{background:var(--good-soft); color:var(--good);}\n'+
-'.pill-view{background:var(--surface-2); color:var(--text-muted);}\n'+
-'.pill-local{background:var(--warn-soft); color:var(--warn);}\n'+
-'.pill-dot{width:7px;height:7px;border-radius:50%;background:currentColor;}\n'+
-'.weeknav{display:flex; align-items:center; gap:8px;}\n'+
-'.weeknav .wk{font-family:"IBM Plex Mono",monospace; font-size:.85rem; min-width:190px; text-align:center;}\n'+
-'.weeknav .wk b{font-size:.95rem;}\n'+
-'.btn{border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:var(--radius-s); padding:7px 13px; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:6px; transition:background .12s,border-color .12s;}\n'+
-'.btn:hover{border-color:var(--accent);}\n'+
-'.btn:focus-visible{outline:2px solid var(--accent); outline-offset:1px;}\n'+
-'.btn-icon{padding:7px 9px;}\n'+
-'.btn-primary{background:var(--accent); border-color:var(--accent); color:#fff;}\n'+
-'.btn-primary:hover{background:var(--accent-strong); border-color:var(--accent-strong);}\n'+
-'.btn-ghost{background:transparent; border-color:transparent;}\n'+
-'.btn-ghost:hover{background:var(--surface-2); border-color:var(--surface-2);}\n'+
-'.btn-danger{color:var(--danger); border-color:var(--danger-soft);}\n'+
-'.btn-danger:hover{background:var(--danger-soft); border-color:var(--danger);}\n'+
-'.btn[disabled]{opacity:.45; cursor:not-allowed;}\n'+
-'.btn-sm{padding:5px 10px; font-size:.82rem;}\n'+
-'.toolbar{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:10px 0 12px;}\n'+
-'.toolbar-spacer{flex:1;}\n'+
-'.timetable-wrap{overflow-x:auto; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-l); padding:12px; box-shadow:var(--shadow);}\n'+
-'.grid{display:grid; grid-template-columns: 90px repeat(var(--daycount,5), minmax(168px,1fr)); gap:6px; min-width:950px;}\n'+
-'.cell-corner{background:transparent;}\n'+
-'.day-head{background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-s); padding:8px 12px; text-align:left; position:sticky; top:0;}\n'+
-'.day-head .d-name{font-weight:700; font-size:.94rem;}\n'+
-'.day-head .d-date{font-family:"IBM Plex Mono",monospace; font-size:.75rem; color:var(--text-muted);}\n'+
-'.day-head.is-today{box-shadow:inset 0 -3px 0 var(--accent);}\n'+
-'.daynote-input{width:100%; margin-top:4px; border:1px solid transparent; background:transparent; border-radius:var(--radius-s); padding:3px 5px; font-size:.72rem; color:var(--text-muted); resize:none; min-height:20px; font-family:inherit; transition:background .12s,border-color .12s;}\n'+
-'.daynote-input:hover{border-color:var(--border);}\n'+
-'.daynote-input:focus{border-color:var(--accent); background:var(--surface); color:var(--text); outline:none;}\n'+
-'.daynote-input.has-content{border-color:var(--border); background:var(--surface); color:var(--text); font-weight:700; padding:5px 7px;}\n'+
-'.daynote-view{margin-top:4px; font-size:.72rem; color:var(--text-muted); white-space:pre-wrap;}\n'+
-'.daynote-view.has-content{background:var(--surface); color:var(--text); font-weight:700; border:1px solid var(--border); border-radius:var(--radius-s); padding:5px 7px;}\n'+
-'.time-cell{padding:5px 9px; font-family:"IBM Plex Mono",monospace; font-size:.7rem; color:var(--text-muted); display:flex; flex-direction:column; justify-content:center; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-s);}\n'+
-'.time-cell b{display:block; color:var(--text); font-size:.8rem; font-weight:600;}\n'+
-'.lesson-cell{position:relative; padding:6px 12px; min-height:54px; cursor:pointer; display:flex; flex-direction:column; justify-content:center; gap:2px; background:var(--surface); transition:background .1s; border:1px solid var(--border); border-radius:var(--radius-s);}\n'+
-'.lesson-cell:hover{background:var(--surface-2);}\n'+
-'.lesson-cell:focus-visible{outline:2px solid var(--accent); outline-offset:-2px;}\n'+
-'.lesson-cell.is-empty-day{background:repeating-linear-gradient(135deg, var(--bg) 0 12px, var(--surface) 12px 24px); border-color:var(--bg); cursor:default; opacity:.6;}\n'+
-'.lesson-cell .subj{font-weight:600; font-size:.88rem;}\n'+
-'.lesson-cell .klasse{font-size:.74rem; color:var(--text-muted);}\n'+
-'.status-dot{position:absolute; top:6px; right:6px; width:8px; height:8px; border-radius:50%; border:1.5px solid var(--text-muted); background:transparent;}\n'+
-'.status-dot.is-planned{background:var(--good); border-color:var(--good);}\n'+
-'.status-dot.is-taught{background:var(--accent); border-color:var(--accent);}\n'+
-'.status-dot.is-taught::after{content:"✓"; position:absolute; inset:-6px; display:flex; align-items:center; justify-content:center; font-size:9px; color:var(--accent); font-weight:700;}\n'+
-'.lesson-cell.is-planned{background:var(--good-soft);}\n'+
-'.lesson-cell.is-planned:hover{filter:brightness(0.97);}\n'+
-'.lesson-cell.is-taught{background:var(--accent-soft);}\n'+
-'.lesson-cell.is-taught:hover{filter:brightness(0.97);}\n'+
-'.lesson-cell.has-mark{border-left-width:5px; border-left-style:solid;}\n'+
-'.mark-chip{display:inline-block; font-size:.65rem; font-weight:700; padding:1px 6px; border-radius:999px; border:1px solid; width:fit-content; line-height:1.4;}\n'+
-'.overlay{position:fixed; inset:0; background:rgba(20,24,22,.38); z-index:60; animation:fade .15s ease;}\n'+
-'@keyframes fade{from{opacity:0} to{opacity:1}}\n'+
-'.drawer{position:fixed; top:0; right:0; height:100%; width:min(460px,100%); background:var(--surface); z-index:61; box-shadow:var(--shadow); display:flex; flex-direction:column; transform:translateX(0); animation:slidein .18s ease; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);}\n'+
-'@keyframes slidein{from{transform:translateX(24px); opacity:.4} to{transform:translateX(0); opacity:1}}\n'+
-'.drawer-head{padding:18px 20px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; gap:10px;}\n'+
-'.drawer-head .ti{flex:1;}\n'+
-'.drawer-head h2{font-size:1.15rem;}\n'+
-'.drawer-head .meta{font-size:.8rem; color:var(--text-muted); margin-top:2px; font-family:"IBM Plex Mono",monospace;}\n'+
-'.drawer-body{flex:1; overflow-y:auto; padding:18px 20px; display:flex; flex-direction:column; gap:18px;}\n'+
-'.drawer-foot{padding:14px 20px; border-top:1px solid var(--border); display:flex; gap:10px; align-items:center;}\n'+
-'.field label{display:block; font-weight:700; font-size:.8rem; margin-bottom:6px; text-transform:uppercase; letter-spacing:.4px; color:var(--text-muted);}\n'+
-'.field .hint{font-size:.76rem; color:var(--text-muted); margin-top:4px;}\n'+
-'.field input[type=text], .field input[type=url], .field textarea, .field select, .field input[type=number]{width:100%; border:1px solid var(--border); border-radius:var(--radius-s); padding:8px 10px; background:var(--surface);}\n'+
-'.field textarea{resize:vertical; min-height:70px;}\n'+
-'.field input:disabled, .field textarea:disabled, .field select:disabled{background:var(--surface-2); color:var(--text-muted); cursor:not-allowed;}\n'+
-'.row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}\n'+
-'.lp21row{display:flex; gap:8px; align-items:flex-end;}\n'+
-'.lp21row .field{flex:1;}\n'+
-'.lp21-link-out{display:inline-flex; align-items:center; gap:5px; font-size:.82rem; margin-top:6px;}\n'+
-'.ablauf-row{display:grid; grid-template-columns:60px 1fr 1fr 2fr auto; gap:6px; align-items:start; margin-bottom:8px;}\n'+
-'.ablauf-row input, .ablauf-row select, .ablauf-row textarea{width:100%; border:1px solid var(--border); border-radius:var(--radius-s); padding:6px 8px; background:var(--surface); font-size:.85rem;}\n'+
-'.ablauf-row textarea{min-height:36px; resize:vertical;}\n'+
-'.ablauf-head{display:grid; grid-template-columns:60px 1fr 1fr 2fr auto; gap:6px; font-size:.7rem; text-transform:uppercase; letter-spacing:.3px; color:var(--text-muted); margin-bottom:6px;}\n'+
-'.ablauf-static{border-left:3px solid var(--accent-soft); padding:8px 0 8px 12px; margin-bottom:8px;}\n'+
-'.ablauf-static .ph{font-weight:700; font-size:.82rem;}\n'+
-'.ablauf-static .mi{font-family:"IBM Plex Mono",monospace; font-size:.74rem; color:var(--text-muted);}\n'+
-'.ablauf-static p{margin:4px 0 0; font-size:.86rem;}\n'+
-'.icon-btn{background:none; border:none; cursor:pointer; color:var(--text-muted); padding:4px; border-radius:var(--radius-s);}\n'+
-'.icon-btn:hover{color:var(--danger); background:var(--danger-soft);}\n'+
-'.dialog-backdrop{position:fixed; inset:0; background:rgba(20,24,22,.42); z-index:70; display:flex; align-items:center; justify-content:center; padding:20px;}\n'+
-'.dialog{background:var(--surface); border-radius:var(--radius-l); box-shadow:var(--shadow); width:min(560px,100%); max-height:88vh; display:flex; flex-direction:column;}\n'+
-'.dialog-head{padding:18px 22px; border-bottom:1px solid var(--border);}\n'+
-'.dialog-head h2{font-size:1.1rem;}\n'+
-'.dialog-body{padding:18px 22px; overflow-y:auto; display:flex; flex-direction:column; gap:16px;}\n'+
-'.dialog-foot{padding:14px 22px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end;}\n'+
-'.sched-day{border:1px solid var(--border); border-radius:var(--radius-m); padding:12px; margin-bottom:10px;}\n'+
-'.sched-day h3{font-size:.92rem; margin-bottom:8px;}\n'+
-'.sched-row{display:grid; grid-template-columns:70px 70px 1.4fr 1fr auto; gap:6px; margin-bottom:6px; align-items:center;}\n'+
-'.sched-row input{border:1px solid var(--border); border-radius:var(--radius-s); padding:5px 7px; background:var(--surface); font-size:.82rem; width:100%;}\n'+
-'.break-bar{background:repeating-linear-gradient(135deg, var(--surface-2) 0 8px, var(--surface) 8px 16px); display:flex; align-items:center; justify-content:center; font-size:.72rem; color:var(--text-muted); padding:6px 14px; letter-spacing:.3px; font-family:"IBM Plex Mono",monospace; border:1px solid var(--border); border-radius:var(--radius-s);}\n'+
-'.period-row{display:grid; grid-template-columns:70px 70px 100px 1fr auto; gap:6px; margin-bottom:6px; align-items:center;}\n'+
-'.period-row input, .period-row select{border:1px solid var(--border); border-radius:var(--radius-s); padding:5px 7px; background:var(--surface); font-size:.82rem; width:100%;}\n'+
-'.day-row-wrap{margin-bottom:10px;}\n'+
-'.day-row{display:grid; grid-template-columns:92px auto 1.4fr 1fr; gap:8px; margin-bottom:4px; align-items:center;}\n'+
-'.day-row .dr-subject, .day-row .dr-klasse{border:1px solid var(--border); border-radius:var(--radius-s); padding:5px 7px; background:var(--surface); font-size:.82rem; width:100%;}\n'+
-'.mark-row{display:flex; align-items:center; gap:8px; padding-left:100px; font-size:.76rem; color:var(--text-muted); flex-wrap:wrap;}\n'+
-'.mark-row .mark-toggle{display:flex; align-items:center; gap:5px; white-space:nowrap;}\n'+
-'.mark-row input[type=color]{width:26px; height:24px; padding:0; border:1px solid var(--border); border-radius:6px; background:var(--surface); cursor:pointer;}\n'+
-'.mark-row input[type=color]:disabled{opacity:.4; cursor:not-allowed;}\n'+
-'.mark-row input[type=text]{flex:1; min-width:120px; border:1px solid var(--border); border-radius:var(--radius-s); padding:4px 8px; background:var(--surface); font-size:.78rem;}\n'+
-'.mark-row input[type=text]:disabled{opacity:.4; cursor:not-allowed; background:var(--surface-2);}\n'+
-'.toast{position:fixed; bottom:calc(20px + env(safe-area-inset-bottom,0px)); left:50%; transform:translateX(-50%); background:var(--accent-strong); color:#fff; padding:10px 18px; border-radius:999px; font-weight:600; font-size:.85rem; box-shadow:var(--shadow); z-index:90; animation:toastin .18s ease;}\n'+
-'@keyframes toastin{from{opacity:0; transform:translate(-50%,8px)} to{opacity:1; transform:translate(-50%,0)}}\n'+
-'.banner{background:var(--warn-soft); color:var(--warn); border-radius:var(--radius-m); padding:10px 14px; font-size:.85rem; margin-bottom:16px; display:flex; gap:8px; align-items:center;}\n'+
-'.banner.err{background:var(--danger-soft); color:var(--danger);}\n'+
-'.print-sheet .ps-head{display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--text); padding-bottom:10px; margin-bottom:16px;}\n'+
-'.print-sheet .ps-head h2{font-size:1.3rem;}\n'+
-'.print-sheet .ps-lesson{border:1px solid var(--border); border-radius:var(--radius-m); padding:14px; margin-bottom:14px; break-inside:avoid;}\n'+
-'.print-sheet .ps-lesson h3{font-size:1rem; margin-bottom:2px;}\n'+
-'.print-sheet .ps-lesson .ps-meta{font-size:.8rem; color:var(--text-muted); font-family:"IBM Plex Mono",monospace; margin-bottom:8px;}\n'+
-'.print-sheet .ps-field{margin-bottom:8px;}\n'+
-'.print-sheet .ps-field .l{font-weight:700; font-size:.72rem; text-transform:uppercase; letter-spacing:.4px; color:var(--text-muted); margin-bottom:2px;}\n'+
-'.print-sheet .ps-field .v{font-size:.88rem; white-space:pre-wrap;}\n'+
-'.print-sheet table{width:100%; border-collapse:collapse; font-size:.82rem;}\n'+
-'.print-sheet table th, .print-sheet table td{border:1px solid var(--border); padding:5px 7px; text-align:left; vertical-align:top;}\n'+
-'@media (max-width:640px){\n'+
-'  .topbar-inner{gap:10px;}\n'+
-'  .weeknav .wk{min-width:0;}\n'+
-'  .row2{grid-template-columns:1fr;}\n'+
-'  .ablauf-row, .ablauf-head{grid-template-columns:1fr; }\n'+
-'  .sched-row{grid-template-columns:1fr 1fr; }\n'+
-'  .period-row{grid-template-columns:1fr 1fr; }\n'+
-'  .day-row{grid-template-columns:1fr 1fr; }\n'+
-'}\n'+
-'</style>';
 
 /* ================= state ================= */
 var state = null;
@@ -1190,34 +971,33 @@ function renderPrintModalInto(app){
   bg.setAttribute("data-act","close-print");
   bg.innerHTML = '<div class="dialog print-modal" data-stop="1" style="width:min(720px,100%);">'+
     '<div class="dialog-head no-print"><h2>'+esc(ui.printContent.title)+'</h2></div>'+
-    '<div class="dialog-body">'+ui.printContent.html+'</div>'+
-    '<div class="dialog-foot no-print"><button type="button" class="btn" data-act="close-print">Schliessen</button><button type="button" class="btn btn-primary" data-act="do-print">Drucken / Als PDF speichern</button></div>'+
+    '<div class="dialog-body"><div id="print-target">'+ui.printContent.html+'</div></div>'+
+    '<div class="dialog-foot no-print"><button type="button" class="btn" data-act="close-print">Schliessen</button><button type="button" class="btn btn-primary" data-act="do-print">Als PDF herunterladen</button></div>'+
   '</div>';
   app.appendChild(bg);
 }
 
 function doPrint(){
   if(!ui.printContent) return;
-  var printDoc = "<!doctype html>\n<html>\n<head>\n"+HEAD_HTML+"\n"+
-    "<style>\n"+
-    ".print-toolbar{position:sticky; top:0; background:var(--surface); border-bottom:1px solid var(--border); padding:14px 20px; display:flex; gap:10px; align-items:center; justify-content:space-between; z-index:10;}\n"+
-    ".print-toolbar .hint{margin:0;}\n"+
-    ".print-page{max-width:900px; margin:0 auto; padding:24px 20px 60px;}\n"+
-    "@media print{ .print-toolbar{display:none!important;} }\n"+
-    "</style>\n"+
-    "</head>\n<body>\n"+
-    '<div class="print-toolbar no-print"><span class="hint">Bereit zum Drucken oder als PDF speichern.</span><button type="button" class="btn btn-primary" onclick="window.print()">Drucken / Als PDF speichern</button></div>\n'+
-    '<div class="print-page">'+ui.printContent.html+'</div>\n'+
-    "</body>\n</html>";
-  var w = null;
-  try{ w = window.open("", "_blank"); }catch(err){ w = null; }
-  if(w && w.document){
-    w.document.open();
-    w.document.write(printDoc);
-    w.document.close();
-  } else {
-    showToast("Bitte Pop-ups für diese Seite erlauben, dann erneut versuchen.", true);
-  }
+  var el = qs("#print-target");
+  if(!el || !window.html2pdf){ showToast("PDF-Erstellung nicht verfügbar. Bitte Seite neu laden.", true); return; }
+  var btn = qs('[data-act="do-print"]');
+  if(btn){ btn.disabled = true; btn.textContent = "Erstelle PDF…"; }
+  var filename = (ui.printContent.filename||ui.printContent.title||"Export").replace(/[^\w\-.äöüÄÖÜ]+/g,"_")+".pdf";
+  html2pdf().set({
+    margin: 10,
+    filename: filename,
+    image: {type:"jpeg", quality:0.98},
+    html2canvas: {scale:2, useCORS:true},
+    jsPDF: {unit:"mm", format:"a4", orientation:"portrait"},
+    pagebreak: {mode:["css","legacy"], before:".ps-lesson + .ps-lesson"}
+  }).from(el).save().then(function(){
+    if(btn){ btn.disabled = false; btn.textContent = "Als PDF herunterladen"; }
+  }).catch(function(err){
+    console.error(err);
+    showToast("PDF-Erstellung fehlgeschlagen.", true);
+    if(btn){ btn.disabled = false; btn.textContent = "Als PDF herunterladen"; }
+  });
 }
 
 /* ================= export builders ================= */
@@ -1248,7 +1028,7 @@ function buildDayExport(dateVal, filter){
   var weekVal = isoWeekValueFromDate(d);
   var dayIdx = mondayOffset;
   if(dayIdx > 4){
-    return {title:"Tagesübersicht", html:'<div class="print-sheet"><p>An Wochenenden sind keine Lektionen geplant.</p></div>'};
+    return {title:"Tagesübersicht", filename:"Tagesübersicht_"+fmtDateLong(d), html:'<div class="print-sheet"><p>An Wochenenden sind keine Lektionen geplant.</p></div>'};
   }
   var dayKey = WEEKDAYS[dayIdx].key;
   var noteVal = (state.dayNotes && state.dayNotes[weekVal+"_"+dayKey]) || "";
@@ -1266,6 +1046,7 @@ function buildDayExport(dateVal, filter){
   var emptyMsg = filter === "planned" ? "Keine geplanten/durchgeführten Lektionen an diesem Tag." : "Keine Lektionen an diesem Tag.";
   return {
     title:"Tagesübersicht",
+    filename:"Tagesübersicht_"+fmtDateLong(d),
     html:'<div class="print-sheet"><div class="ps-head"><h2>'+WEEKDAYS[dayIdx].label+', '+fmtDateLong(d)+'</h2><div class="mono">'+esc(m.teacherName||"")+(m.className?(' · Kl. '+esc(m.className)):'')+'</div></div>'+
       (noteVal ? '<div class="ps-field"><div class="l">Tagesnotiz</div><div class="v">'+esc(noteVal)+'</div></div>' : '')+
       (blocks || '<p>'+emptyMsg+'</p>')+'</div>'
@@ -1298,8 +1079,11 @@ function buildSubjectExport(subject, fromWeek, toWeek, filter){
   }
   var m = state.meta||{};
   var emptyMsg = filter === "planned" ? "Keine geplanten/durchgeführten Lektionen im gewählten Zeitraum." : "Keine Lektionen im gewählten Zeitraum.";
+  var rangeStart = mondayFromWeekValue(fromWeek);
+  var rangeEnd = addDaysUTC(mondayFromWeekValue(toWeek), 4);
   return {
     title:"Fachübersicht",
+    filename:"Fachübersicht_"+subject+"_"+fmtDateLong(rangeStart)+"-"+fmtDateLong(rangeEnd),
     html:'<div class="print-sheet"><div class="ps-head"><h2>'+esc(subject)+'</h2><div class="mono">'+esc(m.teacherName||"")+(m.className?(' · Kl. '+esc(m.className)):'')+'</div></div>'+
       (blocks.length ? blocks.join("") : '<p>'+emptyMsg+'</p>')+'</div>'
   };
@@ -1495,17 +1279,26 @@ function handleAction(act, e, t){
     var fElC = qs('input[name="exp-filter"]:checked');
     var filterVal = fElC ? fElC.value : (ui.exportFilter||"all");
     ui.exportFilter = filterVal;
-    if(ui.exportDialog === "day"){
-      var dateVal = qs("#exp-date").value;
-      if(dateVal){ ui.printContent = buildDayExport(dateVal, filterVal); }
-    } else {
-      var subj = qs("#exp-subject").value;
-      var from = qs("#exp-from").value;
-      var to = qs("#exp-to").value;
-      if(subj && from && to){ ui.printContent = buildSubjectExport(subj, from, to, filterVal); }
-    }
-    ui.exportDialog = null;
-    render();
+    var dialogKind = ui.exportDialog;
+    var dateVal = dialogKind === "day" ? qs("#exp-date").value : null;
+    var subj = dialogKind === "subject" ? qs("#exp-subject").value : null;
+    var from = dialogKind === "subject" ? qs("#exp-from").value : null;
+    var to = dialogKind === "subject" ? qs("#exp-to").value : null;
+    t.disabled = true; t.textContent = "Aktualisiere…";
+    var refreshStep = mode === "shared" ? loadSharedState(shareToken) : loadFullState();
+    refreshStep.then(function(){
+      if(dialogKind === "day"){
+        if(dateVal){ ui.printContent = buildDayExport(dateVal, filterVal); }
+      } else {
+        if(subj && from && to){ ui.printContent = buildSubjectExport(subj, from, to, filterVal); }
+      }
+      ui.exportDialog = null;
+      render();
+    }).catch(function(err){
+      console.error(err);
+      showToast("Aktualisieren fehlgeschlagen. Bitte erneut versuchen.", true);
+      t.disabled = false; t.textContent = "Vorschau erstellen";
+    });
   } else if(act==="close-print"){
     if(e.target !== t) return;
     ui.printContent = null; render();
