@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Lektionenplaner</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Nunito:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 :root{
   --bg:#fbeff0;
@@ -157,7 +158,7 @@ textarea, input, select{font-family:inherit; font-size:inherit; color:var(--text
 .drawer-foot{padding:14px 20px; border-top:1px solid var(--border); display:flex; gap:10px; align-items:center;}
 .field label{display:block; font-weight:700; font-size:.8rem; margin-bottom:6px; text-transform:uppercase; letter-spacing:.4px; color:var(--text-muted);}
 .field .hint{font-size:.76rem; color:var(--text-muted); margin-top:4px;}
-.field input[type=text], .field input[type=url], .field textarea, .field select, .field input[type=number]{width:100%; border:1px solid var(--border); border-radius:var(--radius-s); padding:8px 10px; background:var(--surface);}
+.field input[type=text], .field input[type=url], .field input[type=email], .field input[type=password], .field textarea, .field select, .field input[type=number]{width:100%; border:1px solid var(--border); border-radius:var(--radius-s); padding:8px 10px; background:var(--surface);}
 .field textarea{resize:vertical; min-height:70px;}
 .field input:disabled, .field textarea:disabled, .field select:disabled{background:var(--surface-2); color:var(--text-muted); cursor:not-allowed;}
 .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
@@ -223,11 +224,9 @@ textarea, input, select{font-family:inherit; font-size:inherit; color:var(--text
 </head>
 <body>
 <div id="app"></div>
-<script id="app-data" type="application/json">{"version":1,"meta":{"schoolName":"","teacherName":"Leonie Halser","className":"6","mentorName":"","updatedAt":"2026-09-19T18:48:51.774Z"},"schedule":{"Mo":{"p1":{"subject":"Deutsch","klasse":"","active":true,"mark":{"color":"#ffa57d","label":"Gion"}},"p2":{"subject":"Deutsch","klasse":"","active":true,"mark":{"color":"#ffa57d","label":"Gion"}},"p3":{"subject":"English","klasse":"","active":true,"mark":null},"p4":{"subject":"Matematica","klasse":"","active":true,"mark":null},"p5":{"subject":"pusseivladad da far Studium","klasse":"","active":true,"mark":{"color":"#ffa57d","label":""}},"p6":{"subject":"Romontsch","klasse":"","active":true,"mark":null},"p7":{"subject":"Religiun","klasse":"","active":false,"mark":null},"p8":{"subject":"NUS","klasse":"","active":true,"mark":null}},"Di":{"p1":{"subject":"Romontsch","klasse":"","active":true,"mark":null},"p2":{"subject":"Matematica","klasse":"","active":true,"mark":null},"p3":{"subject":"Moviment e sport","klasse":"","active":true,"mark":{"color":"#ffa57d","label":"Gion"}},"p4":{"subject":"Moviment e sport","klasse":"","active":true,"mark":{"color":"#ffa57d","label":"Gion"}},"p5":{"subject":"pusseivladad da far Studium","klasse":"","active":true,"mark":{"color":"#ffa57d","label":""}},"p6":{"subject":"English","klasse":"","active":true,"mark":null},"p7":{"subject":"Deutsch","klasse":"","active":true,"mark":{"color":"#ffa57d","label":"Gion"}},"p8":{"subject":"NUS","klasse":"","active":true,"mark":null}},"Mi":{"p1":{"subject":"Romontsch","klasse":"","active":true,"mark":null},"p2":{"subject":"Matematica","klasse":"","active":true,"mark":null},"p3":{"subject":"Deutsch","klasse":"","active":true,"mark":{"color":"#ffa57d","label":"Gion"}},"p4":{"subject":"NUS","klasse":"","active":true,"mark":null},"p5":{"subject":"","klasse":"","active":false,"mark":null},"p6":{"subject":"","klasse":"","active":false,"mark":null},"p7":{"subject":"","klasse":"","active":false,"mark":null},"p8":{"subject":"","klasse":"","active":false,"mark":null}},"Do":{"p1":{"subject":"Deutsch","klasse":"","active":false,"mark":null},"p2":{"subject":"Deutsch","klasse":"","active":false,"mark":null},"p3":{"subject":"Matematica","klasse":"","active":true,"mark":null},"p4":{"subject":"Romontsch","klasse":"","active":true,"mark":null},"p5":{"subject":"pusseivladad da far Studium","klasse":"","active":false,"mark":null},"p6":{"subject":"Sport","klasse":"","active":false,"mark":null},"p7":{"subject":"Sport","klasse":"","active":false,"mark":null},"p8":{"subject":"Deutsch","klasse":"","active":false,"mark":null}},"Fr":{"p1":{"subject":"Deutsch","klasse":"","active":true,"mark":{"color":"#ffa57d","label":"Gion"}},"p2":{"subject":"Matematcia","klasse":"","active":true,"mark":null},"p3":{"subject":"Romontsch","klasse":"","active":true,"mark":null},"p4":{"subject":"NUS","klasse":"","active":true,"mark":null},"p5":{"subject":"pusseivladad da far Studium","klasse":"","active":true,"mark":{"color":"#ffa57d","label":""}},"p6":{"subject":"Medias ed informatica","klasse":"","active":true,"mark":{"color":"#ffa57d","label":"Gion"}},"p7":{"subject":"musica","klasse":"","active":true,"mark":{"color":"#ffa57d","label":"Gion"}},"p8":{"subject":"moviment e sport","klasse":"","active":true,"mark":{"color":"#ffa57d","label":"Gion"}}}},"lessons":{"2026-W38_Mo_p1":{"subject":"Deutsch","klasse":"","lp21Text":"","lp21Link":"","lernziele":"","ablauf":[],"material":"","notizen":"","taught":false,"updatedAt":"2026-09-19T13:51:13.393Z"},"2026-W38_Mo_p2":{"subject":"Deutsch","klasse":"","lp21Text":"","lp21Link":"","lernziele":"","ablauf":[],"material":"","notizen":"","taught":false,"updatedAt":"2026-09-19T13:49:23.133Z"},"2026-W38_Mo_p6":{"subject":"Romontsch","klasse":"","lp21Text":"","lp21Link":"","lernziele":"","ablauf":[],"material":"","notizen":"","taught":false,"updatedAt":"2026-09-19T13:32:25.649Z"},"2026-W38_Mi_p4":{"subject":"NUS","klasse":"","lp21Text":"","lp21Link":"","lernziele":"","ablauf":[],"material":"","notizen":"","taught":false,"updatedAt":"2026-09-19T13:37:00.957Z"},"2026-W38_Di_p2":{"subject":"Matematica","klasse":"","lp21Text":"","lp21Link":"","lernziele":"","ablauf":[],"material":"","notizen":"","taught":false,"updatedAt":"2026-09-19T13:43:48.941Z"},"2026-W39_Mo_p3":{"subject":"English","klasse":"","lp21Text":"","lp21Link":"","lernziele":"","ablauf":[{"minutes":5,"phase":"Einstieg","sozialform":"Plenum","beschreibung":"- repetiziun dalla jamna vergada (tgei havein nus fatg? co vesa la structura dad ina email ora?)"},{"minutes":35,"phase":"Erarbeitung","sozialform":"EA","beschreibung":"Scriver a fin l'email. \nSche SuS fussen schon a fin astgan els schar \"curreger\" l'email da ChatGPT \n- Prompt: Kannst du mir diese Email korrigieren (Grammatik und Rechtschreibung) und kannst du mir ein Feedback dazu schreiben?\n-> leusuenter surluvrar l'email"},{"minutes":5,"phase":"Abschluss","sozialform":"EA","beschreibung":"Els astgan termetter l'email"}],"material":"- Whiteboard per l'entschatta\n- SeS drovan Mac ed il coursebook","notizen":"","taught":false,"updatedAt":"2026-09-19T18:41:42.877Z"},"2026-W39_Mo_p4":{"subject":"Matematica","klasse":"","lp21Text":"","lp21Link":"","lernziele":"","ablauf":[{"minutes":10,"phase":"Einstieg","sozialform":"GA","beschreibung":"Quels che han gia scret la clausura, vegnan ora el zuler cun mei e leu fagein nus aunc ina gada ina cuorta repetiziun da \"fracziuns e quens\"\n"},{"minutes":35,"phase":"Übung/Vertiefung","sozialform":"EA","beschreibung":"(quels che han gia fatg la clausura)\nLuvrar vid il tema \"fracziuns e quens\""},{"minutes":45,"phase":"Sicherung","sozialform":"EA","beschreibung":"Quels che lessen astgan far la clausura \"parts\""},{"minutes":45,"phase":"Übung/Vertiefung","sozialform":"EA","beschreibung":"Quels che lessen aunc buca far la clausura astgan aunc luvrar vid il tema \"parts\""}],"material":"Ipad per far l'introducziun da \"fracziuns e quens\"\n- SeS drovan cudisch da mate + carnet","notizen":"mirar con lunsch ch'ils SeS ein tier il tema \"parts\".\n-> eisi pusseivel che tuts fan la clausura fin pli tard mardis el studium?","taught":false,"updatedAt":"2026-09-19T18:41:50.906Z"},"2026-W39_Mo_p8":{"subject":"NUS","klasse":"","lp21Text":"","lp21Link":"","lernziele":"","ablauf":[{"minutes":3,"phase":"Einstieg","sozialform":"Plenum","beschreibung":"declarar tgei che nus fagein oz + dar anavos mappas cul feedback"},{"minutes":13,"phase":"Erarbeitung","sozialform":"GA","beschreibung":"(3x quella sequenz)\nMintga gada 6 SeS vegnan cun mei ora sil plaz da pausa e leu fagein nus l'intro tier il tema \"rachetas\" \n-> schar ir las rachetas da Christoph\n"},{"minutes":40,"phase":"Übung/Vertiefung","sozialform":"EA","beschreibung":"Tschels SeS lavuran individual vid ils posts "}],"material":"+ niev ei il post da rachetas\n+ rachetas da Christoph (aua + pumpa)\n+ luvratori ","notizen":"-> far attens ch'ins sto far tut las incumbensas sin in fegl da lavur e buca semplamein mo far la mesadad.","taught":false,"updatedAt":"2026-09-19T18:20:53.014Z"},"2026-W39_Mo_p6":{"subject":"Romontsch","klasse":"","lp21Text":"","lp21Link":"","lernziele":"","ablauf":[],"material":"","notizen":"","taught":false,"updatedAt":"2026-09-19T18:27:02.235Z"}},"dayNotes":{},"lp21Library":[{"id":"id4yad4mfb","label":"hwofhbewfe","link":"efoweeh"},{"id":"ida4th61eh","label":"MA.3nf","link":""}],"periods":[{"id":"p1","start":"07:45","end":"08:30","type":"lesson","label":""},{"id":"p2","start":"08:35","end":"09:20","type":"lesson","label":""},{"id":"p3","start":"09:35","end":"10:20","type":"lesson","label":""},{"id":"p4","start":"10:25","end":"11:10","type":"lesson","label":""},{"id":"brk_p4","start":"11:10","end":"12:50","type":"break","label":"Mittag"},{"id":"p5","start":"12:50","end":"13:35","type":"lesson","label":""},{"id":"p6","start":"13:40","end":"14:25","type":"lesson","label":""},{"id":"p7","start":"14:40","end":"15:25","type":"lesson","label":""},{"id":"p8","start":"15:30","end":"16:15","type":"lesson","label":""}]}</script>
 <script>
 (function(){
 "use strict";
-var OWN_SCRIPT_SOURCE = document.currentScript.textContent;
 
 /* ================= constants ================= */
 var WEEKDAYS = [
@@ -463,56 +462,10 @@ var HEAD_HTML = '<meta charset="UTF-8">\n'+
 
 /* ================= state ================= */
 var state = null;
-try{ state = JSON.parse(document.getElementById("app-data").textContent); }catch(e){ state = null; }
-if(!state){ state = {version:1, meta:{schoolName:"",teacherName:"",className:"",mentorName:"",updatedAt:null}, schedule:{Mo:[],Di:[],Mi:[],Do:[],Fr:[]}, lessons:{}, dayNotes:{}, lp21Library:[]}; }
-if(!state.dayNotes) state.dayNotes = {};
-if(!state.lp21Library) state.lp21Library = [];
 
-function toMinutes(hhmm){
-  var parts = (hhmm||"00:00").split(":");
-  return (parseInt(parts[0],10)||0)*60 + (parseInt(parts[1],10)||0);
-}
-
-function migrateScheduleIfNeeded(s){
-  if(s.periods) return;
-  var canonicalDay = "Mo", maxLen = -1;
-  WEEKDAYS.forEach(function(d){
-    var len = (s.schedule[d.key]||[]).length;
-    if(len > maxLen){ maxLen = len; canonicalDay = d.key; }
-  });
-  var canonical = (s.schedule[canonicalDay]||[]).slice().sort(function(a,b){ return toMinutes(a.start)-toMinutes(b.start); });
-
-  var periods = [];
-  for(var i=0;i<canonical.length;i++){
-    periods.push({id:canonical[i].id, start:canonical[i].start, end:canonical[i].end, type:"lesson"});
-    if(i < canonical.length-1){
-      var curEnd = canonical[i].end, nextStart = canonical[i+1].start;
-      var gapMin = toMinutes(nextStart) - toMinutes(curEnd);
-      if(gapMin >= 10){
-        var label = gapMin >= 45 ? "Mittag" : "Pause";
-        periods.push({id:"brk_"+canonical[i].id, start:curEnd, end:nextStart, type:"break", label:label});
-      }
-    }
-  }
-
-  var newSchedule = {};
-  WEEKDAYS.forEach(function(d){
-    newSchedule[d.key] = {};
-    (s.schedule[d.key]||[]).forEach(function(p){
-      newSchedule[d.key][p.id] = {subject:p.subject||"", klasse:p.klasse||"", active:true};
-    });
-  });
-
-  s.periods = periods;
-  s.schedule = newSchedule;
-}
-migrateScheduleIfNeeded(state);
-
-var mode = "local";       // "synced" | "local"
+var mode = "loading";      // "loading" | "login" | "synced" | "shared" | "error"
 var canEdit = false;
-var editStatusKnown = false;
-var artifactCap = null;
-var userCap = null;
+var bootError = null;
 
 var ui = {
   currentWeek: localStorage.getItem("lp_currentWeek") || isoWeekValueFromDate(new Date()),
@@ -607,63 +560,234 @@ function allSubjects(){
   return Object.keys(set).sort(function(a,b){return a.localeCompare(b,"de");});
 }
 
-/* ================= persistence ================= */
-function buildDocument(newState){
-  var dataJson = JSON.stringify(newState).replace(/</g, "\\u003c");
-  return "<!doctype html>\n<html>\n<head>\n"+HEAD_HTML+"\n</head>\n<body>\n"+
-    '<div id="app"></div>\n'+
-    '<script id="app-data" type="application/json">'+dataJson+"<"+"/script>\n"+
-    "<script>"+OWN_SCRIPT_SOURCE+"<"+"/script>\n"+
-    "</body>\n</html>";
+/* ================= supabase ================= */
+var SUPABASE_URL = "https://gtjeqyxnmxtserflwxfu.supabase.co";
+var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0amVxeXhubXh0c2VyZmx3eGZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5MTQ0MDgsImV4cCI6MjEwNTQ5MDQwOH0.y9KqYtgJo5y7LIP8LJbjdi6P20xf6IiZE189r4ks7iA";
+var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var shareToken = new URLSearchParams(location.search).get("token");
+
+function assembleState(metaRow, periodRows, cellRows, lessonRows, noteRows, libRows){
+  var s = {
+    version:1,
+    meta:{
+      schoolName:(metaRow&&metaRow.school_name)||"",
+      teacherName:(metaRow&&metaRow.teacher_name)||"",
+      className:(metaRow&&metaRow.class_name)||"",
+      mentorName:(metaRow&&metaRow.mentor_name)||"",
+      updatedAt:(metaRow&&metaRow.updated_at)||null
+    },
+    periods:(periodRows||[]).slice().sort(function(a,b){ return (a.sort_order||0)-(b.sort_order||0); }).map(function(p){
+      return {id:p.id, start:p.start_time, end:p.end_time, type:p.type, label:p.label||""};
+    }),
+    schedule:{}, lessons:{}, dayNotes:{}, lp21Library:[]
+  };
+  WEEKDAYS.forEach(function(d){ s.schedule[d.key] = {}; });
+  (cellRows||[]).forEach(function(c){
+    if(!s.schedule[c.day]) s.schedule[c.day] = {};
+    s.schedule[c.day][c.period_id] = {
+      subject:c.subject||"", klasse:c.klasse||"", active:c.active!==false,
+      mark: c.mark_color ? {color:c.mark_color, label:c.mark_label||""} : null
+    };
+  });
+  (lessonRows||[]).forEach(function(l){
+    s.lessons[lessonKey(l.week,l.day,l.period_id)] = {
+      subject:l.subject||"", klasse:l.klasse||"", lp21Text:l.lp21_text||"", lp21Link:l.lp21_link||"",
+      lernziele:l.lernziele||"", ablauf:l.ablauf||[], material:l.material||"", notizen:l.notizen||"",
+      taught:!!l.taught, updatedAt:l.updated_at||null
+    };
+  });
+  (noteRows||[]).forEach(function(n){ s.dayNotes[n.week+"_"+n.day] = n.note||""; });
+  s.lp21Library = (libRows||[]).map(function(r){ return {id:r.id, label:r.label, link:r.link||""}; });
+  return s;
 }
 
-function persist(mutateFn, opts){
-  opts = opts || {};
-  var next = JSON.parse(JSON.stringify(state));
-  mutateFn(next);
-  next.meta.updatedAt = new Date().toISOString();
+function loadFullState(){
+  return Promise.all([
+    sb.from("meta").select("*").eq("id",1).maybeSingle(),
+    sb.from("periods").select("*"),
+    sb.from("schedule_cells").select("*"),
+    sb.from("lessons").select("*"),
+    sb.from("day_notes").select("*"),
+    sb.from("lp21_library").select("*")
+  ]).then(function(results){
+    var errs = results.map(function(r){return r.error;}).filter(Boolean);
+    if(errs.length) throw errs[0];
+    state = assembleState(results[0].data, results[1].data, results[2].data, results[3].data, results[4].data, results[5].data);
+  });
+}
 
-  if(mode === "local"){
-    state = next;
-    try{ localStorage.setItem("lp_state_v1", JSON.stringify(state)); }catch(e){}
-    render();
-    if(opts.toast) showToast(opts.toast);
-    if(opts.onDone) opts.onDone(true);
+function loadSharedState(token){
+  return sb.rpc("get_shared_plan", {p_token:token}).then(function(res){
+    if(res.error) throw res.error;
+    var d = res.data || {};
+    var metaRow = (d.meta && d.meta[0]) || null;
+    state = assembleState(metaRow, d.periods, d.schedule_cells, d.lessons, d.day_notes, d.lp21_library);
+  });
+}
+
+function boot(){
+  mode = "loading"; render();
+  if(shareToken){
+    loadSharedState(shareToken).then(function(){
+      mode = "shared"; canEdit = false; render();
+    }).catch(function(err){
+      console.error(err);
+      mode = "error"; bootError = "Dieser Link ist ungültig oder wurde widerrufen."; render();
+    });
     return;
   }
-
-  if(!artifactCap){
-    state = next;
-    render();
-    if(opts.onDone) opts.onDone(true);
-    return;
-  }
-
-  try{
-    sessionStorage.setItem("lp_restore", JSON.stringify({
-      drawerKey: ui.openDrawerKey, week: ui.currentWeek, toast: opts.toast || null, ts: Date.now()
-    }));
-  }catch(e){}
-
-  var html = buildDocument(next);
-  artifactCap.publish(html).then(function(){
-    state = next;
-    render();
-    if(opts.toast) showToast(opts.toast);
-    if(opts.onDone) opts.onDone(true);
+  sb.auth.getSession().then(function(res){
+    var session = res.data && res.data.session;
+    if(!session){ mode = "login"; render(); return; }
+    return loadFullState().then(function(){
+      mode = "synced"; canEdit = true; render();
+    });
   }).catch(function(err){
-    console.warn("publish failed", err);
-    try{ sessionStorage.removeItem("lp_restore"); }catch(e){}
-    if(err && (err.code==="not_writer" || err.code==="not_granted")){
-      canEdit = false;
-      render();
-      showToast("Keine Schreibrechte – Ansicht ist jetzt schreibgeschützt.", true);
-    } else if(err && err.code==="conflict"){
-      showToast("Eine neuere Version wurde geladen.");
+    console.error(err);
+    mode = "error"; bootError = "Verbindung zur Datenbank fehlgeschlagen."; render();
+  });
+}
+
+function doLogin(email, password){
+  return sb.auth.signInWithPassword({email:email, password:password}).then(function(res){
+    if(res.error) throw res.error;
+    return loadFullState();
+  }).then(function(){
+    mode = "synced"; canEdit = true; render();
+  });
+}
+
+function doLogout(){
+  sb.auth.signOut().then(function(){
+    state = null; mode = "login"; canEdit = false; render();
+  });
+}
+
+/* ================= save actions ================= */
+function saveLesson(key, fields){
+  var parts = key.split("_");
+  var week = parts[0], day = parts[1], periodId = parts.slice(2).join("_");
+  var nowIso = new Date().toISOString();
+  var row = {
+    week:week, day:day, period_id:periodId,
+    subject:fields.subject, klasse:fields.klasse, lp21_text:fields.lp21Text, lp21_link:fields.lp21Link,
+    lernziele:fields.lernziele, ablauf:fields.ablauf, material:fields.material, notizen:fields.notizen,
+    taught:fields.taught, updated_at:nowIso
+  };
+  var libStep = Promise.resolve();
+  if(fields.lp21Text){
+    var existing = (state.lp21Library||[]).filter(function(e){ return e.label===fields.lp21Text; })[0];
+    if(existing){
+      existing.link = fields.lp21Link;
+      libStep = sb.from("lp21_library").update({link:fields.lp21Link}).eq("id", existing.id);
     } else {
-      showToast("Speichern fehlgeschlagen. Bitte erneut versuchen.", true);
+      libStep = sb.from("lp21_library").insert({label:fields.lp21Text, link:fields.lp21Link}).select().single().then(function(res){
+        if(res.error) throw res.error;
+        state.lp21Library.push({id:res.data.id, label:res.data.label, link:res.data.link||""});
+      });
     }
-    if(opts.onDone) opts.onDone(false);
+  }
+  return Promise.all([
+    sb.from("lessons").upsert(row, {onConflict:"week,day,period_id"}),
+    libStep
+  ]).then(function(results){
+    if(results[0].error) throw results[0].error;
+    state.lessons[key] = {subject:fields.subject, klasse:fields.klasse, lp21Text:fields.lp21Text, lp21Link:fields.lp21Link, lernziele:fields.lernziele, ablauf:fields.ablauf, material:fields.material, notizen:fields.notizen, taught:fields.taught, updatedAt:nowIso};
+    render();
+    showToast("Gespeichert ✓");
+  }).catch(function(err){
+    console.error(err);
+    showToast("Speichern fehlgeschlagen. Bitte erneut versuchen.", true);
+  });
+}
+
+function clearLesson(key){
+  var parts = key.split("_");
+  var week = parts[0], day = parts[1], periodId = parts.slice(2).join("_");
+  return sb.from("lessons").delete().match({week:week, day:day, period_id:periodId}).then(function(res){
+    if(res.error) throw res.error;
+    delete state.lessons[key];
+    render();
+    showToast("Zurückgesetzt");
+  }).catch(function(err){
+    console.error(err);
+    showToast("Zurücksetzen fehlgeschlagen.", true);
+  });
+}
+
+function removeLibEntry(id){
+  return sb.from("lp21_library").delete().eq("id", id).then(function(res){
+    if(res.error) throw res.error;
+    state.lp21Library = (state.lp21Library||[]).filter(function(e){ return e.id!==id; });
+    render();
+    showToast("Entfernt");
+  }).catch(function(err){
+    console.error(err);
+    showToast("Entfernen fehlgeschlagen.", true);
+  });
+}
+
+function saveSettingsRemote(fields){
+  var row = {id:1, teacher_name:fields.teacherName, class_name:fields.className, school_name:fields.schoolName, mentor_name:fields.mentorName, updated_at:new Date().toISOString()};
+  return sb.from("meta").upsert(row).then(function(res){
+    if(res.error) throw res.error;
+    state.meta.teacherName = fields.teacherName;
+    state.meta.className = fields.className;
+    state.meta.schoolName = fields.schoolName;
+    state.meta.mentorName = fields.mentorName;
+    render();
+    showToast("Gespeichert ✓");
+  }).catch(function(err){
+    console.error(err);
+    showToast("Speichern fehlgeschlagen.", true);
+  });
+}
+
+function saveDayNote(week, day, val){
+  var key = week+"_"+day;
+  if(val.trim()===""){
+    return sb.from("day_notes").delete().match({week:week, day:day}).then(function(res){
+      if(res.error) throw res.error;
+      delete state.dayNotes[key];
+    }).catch(function(err){ console.error(err); showToast("Speichern fehlgeschlagen.", true); });
+  }
+  return sb.from("day_notes").upsert({week:week, day:day, note:val}, {onConflict:"week,day"}).then(function(res){
+    if(res.error) throw res.error;
+    state.dayNotes[key] = val;
+  }).catch(function(err){ console.error(err); showToast("Speichern fehlgeschlagen.", true); });
+}
+
+function saveSchedule(periods, schedule){
+  return sb.from("periods").select("id").then(function(res){
+    if(res.error) throw res.error;
+    var existingIds = (res.data||[]).map(function(p){ return p.id; });
+    var keepIds = periods.map(function(p){ return p.id; });
+    var removedIds = existingIds.filter(function(id){ return keepIds.indexOf(id)===-1; });
+    var removeStep = removedIds.length ? sb.from("periods").delete().in("id", removedIds) : Promise.resolve({error:null});
+    return removeStep.then(function(rres){
+      if(rres.error) throw rres.error;
+      var periodRows = periods.map(function(p,i){ return {id:p.id, start_time:p.start, end_time:p.end, type:p.type, label:p.label||"", sort_order:i}; });
+      return sb.from("periods").upsert(periodRows);
+    });
+  }).then(function(res){
+    if(res.error) throw res.error;
+    var cellRows = [];
+    Object.keys(schedule).forEach(function(day){
+      Object.keys(schedule[day]).forEach(function(pid){
+        var e = schedule[day][pid];
+        cellRows.push({day:day, period_id:pid, subject:e.subject||"", klasse:e.klasse||"", active:e.active!==false, mark_color:e.mark?e.mark.color:null, mark_label:e.mark?e.mark.label:null});
+      });
+    });
+    return sb.from("schedule_cells").upsert(cellRows, {onConflict:"day,period_id"});
+  }).then(function(res){
+    if(res.error) throw res.error;
+    state.periods = periods;
+    state.schedule = schedule;
+    render();
+    showToast("Stundenplan gespeichert ✓");
+  }).catch(function(err){
+    console.error(err);
+    showToast("Speichern fehlgeschlagen.", true);
   });
 }
 
@@ -684,8 +808,36 @@ function render(){
     wireEvents(app);
   }
 }
+function renderLoadingScreen(){
+  return '<div class="wrap" style="max-width:420px;margin-top:20vh;text-align:center;">'+
+    '<h1 style="margin-bottom:10px;">Lektionenplaner</h1>'+
+    '<div style="color:var(--text-muted);">Lädt…</div></div>';
+}
+
+function renderErrorScreen(){
+  return '<div class="wrap" style="max-width:420px;margin-top:15vh;">'+
+    '<div class="banner err">'+esc(bootError||"Es ist ein Fehler aufgetreten.")+'</div>'+
+    '<button type="button" class="btn" data-act="reload-page">Erneut versuchen</button></div>';
+}
+
+function renderLoginScreen(){
+  return '<div class="wrap" style="max-width:360px;margin-top:14vh;">'+
+    '<h1 style="margin-bottom:4px;">Lektionenplaner</h1>'+
+    '<div style="color:var(--text-muted);margin-bottom:18px;">Bitte anmelden.</div>'+
+    (ui.loginError ? '<div class="banner err" style="margin-bottom:12px;">'+esc(ui.loginError)+'</div>' : '')+
+    '<form id="login-form" data-act-form="login">'+
+      '<div class="field" style="margin-bottom:10px;"><label>E-Mail</label><input type="email" id="li-email" required autocomplete="username"></div>'+
+      '<div class="field" style="margin-bottom:14px;"><label>Passwort</label><input type="password" id="li-password" required autocomplete="current-password"></div>'+
+      '<button type="submit" class="btn btn-primary" style="width:100%;">Anmelden</button>'+
+    '</form></div>';
+}
+
 function renderInner(){
   var app = document.getElementById("app");
+  if(mode === "loading"){ app.innerHTML = renderLoadingScreen(); wireEvents(app); return; }
+  if(mode === "login"){ app.innerHTML = renderLoginScreen(); wireEvents(app); return; }
+  if(mode === "error"){ app.innerHTML = renderErrorScreen(); wireEvents(app); return; }
+
   app.innerHTML = renderTopbar() + '<div class="wrap">' + renderToolbar() + renderTimetable() + '</div>';
 
   if(ui.openDrawerKey){ renderDrawerInto(app); }
@@ -703,12 +855,6 @@ function renderInner(){
 }
 
 function roleLabel(){
-  if(mode === "local"){
-    return '<span class="pill pill-local"><span class="pill-dot"></span>Lokaler Modus</span>';
-  }
-  if(!editStatusKnown){
-    return '<span class="pill pill-view"><span class="pill-dot"></span>Wird geprüft…</span>';
-  }
   return canEdit
     ? '<span class="pill pill-edit"><span class="pill-dot"></span>Bearbeitungsmodus</span>'
     : '<span class="pill pill-view"><span class="pill-dot"></span>Nur-Lese-Ansicht</span>';
@@ -725,7 +871,7 @@ function renderTopbar(){
 
   return '<div class="topbar"><div class="topbar-inner">'+
     '<div class="brand"><h1>Lektionenplaner</h1>'+
-      '<div class="sub">'+subLine+(canEdit? ' · <button type="button" data-act="open-settings">bearbeiten</button>':'')+'</div>'+
+      '<div class="sub">'+subLine+(canEdit? ' · <button type="button" data-act="open-settings">bearbeiten</button> · <button type="button" data-act="logout">abmelden</button>':'')+'</div>'+
     '</div>'+
     roleLabel()+
     '<div class="weeknav">'+
@@ -746,8 +892,7 @@ function renderToolbar(){
       '<button type="button" class="btn" data-act="open-export">Exportieren ▾</button>'+
       (ui.exportMenuOpen ? '' : '')+
     '</div>'+
-    '</div>'+
-    (mode==="local" ? '<div class="banner">Dieses Dokument ist nicht mit dem geteilten Link synchronisiert. Änderungen werden nur lokal in diesem Browser gespeichert.</div>' : '');
+    '</div>';
 }
 
 function renderTimetable(){
@@ -1174,10 +1319,7 @@ function wireEvents(app){
     var key = week+"_"+day;
     var current = (state.dayNotes && state.dayNotes[key]) || "";
     if(val === current) return;
-    persist(function(next){
-      if(!next.dayNotes) next.dayNotes = {};
-      if(val.trim()===""){ delete next.dayNotes[key]; } else { next.dayNotes[key] = val; }
-    });
+    saveDayNote(week, day, val);
   });
   on(app, "input", ".daynote-input", function(e, t){
     t.classList.toggle("has-content", t.value.trim()!=="");
@@ -1187,6 +1329,19 @@ function wireEvents(app){
     var on = t.checked;
     qs(".dr-mark-color", wrap).disabled = !on;
     qs(".dr-mark-label", wrap).disabled = !on;
+  });
+  app.addEventListener("submit", function(e){
+    var form = e.target.closest("#login-form");
+    if(!form) return;
+    e.preventDefault();
+    var email = qs("#li-email", form).value.trim();
+    var password = qs("#li-password", form).value;
+    var btn = qs('button[type="submit"]', form);
+    btn.disabled = true; btn.textContent = "Anmelden…";
+    doLogin(email, password).catch(function(err){
+      ui.loginError = (err && err.message) || "Anmeldung fehlgeschlagen.";
+      render();
+    });
   });
 }
 
@@ -1212,22 +1367,14 @@ function handleAction(act, e, t){
     var ablauf = collectAblaufFromDom(drawer);
     ui.openDrawerKey = null;
     render();
-    persist(function(next){
-      next.lessons[key] = {subject:subject, klasse:klasse, lp21Text:lp21Text, lp21Link:lp21Link, lernziele:lernziele, ablauf:ablauf, material:material, notizen:notizen, taught:taught, updatedAt:new Date().toISOString()};
-      if(lp21Text){
-        if(!next.lp21Library) next.lp21Library = [];
-        var existing = next.lp21Library.filter(function(e){ return e.label===lp21Text; })[0];
-        if(existing){ existing.link = lp21Link; }
-        else { next.lp21Library.push({id:uid(), label:lp21Text, link:lp21Link}); }
-      }
-    }, {toast:"Gespeichert ✓"});
+    saveLesson(key, {subject:subject, klasse:klasse, lp21Text:lp21Text, lp21Link:lp21Link, lernziele:lernziele, ablauf:ablauf, material:material, notizen:notizen, taught:taught});
   } else if(act==="clear-lesson"){
     var drawer2 = qs(".lesson-dialog");
     var key2 = drawer2.dataset.key;
     if(confirm("Diese Lektionsplanung wirklich zurücksetzen?")){
       ui.openDrawerKey = null;
       render();
-      persist(function(next){ delete next.lessons[key2]; }, {toast:"Zurückgesetzt"});
+      clearLesson(key2);
     }
   } else if(act==="ablauf-add"){
     var drawer3 = qs(".lesson-dialog");
@@ -1241,7 +1388,9 @@ function handleAction(act, e, t){
     reRenderAblauf(rows2);
   } else if(act==="lp21-lib-remove"){
     var libId = t.getAttribute("data-id");
-    persist(function(next){ next.lp21Library = (next.lp21Library||[]).filter(function(e){return e.id!==libId;}); }, {toast:"Entfernt"});
+    removeLibEntry(libId);
+  } else if(act==="logout"){
+    doLogout();
   } else if(act==="open-settings"){
     ui.settingsOpen = true; render();
   } else if(act==="close-settings"){
@@ -1252,8 +1401,9 @@ function handleAction(act, e, t){
     var klasseS = qs("#s-klasse").value.trim();
     var school = qs("#s-school").value.trim();
     var mentor = qs("#s-mentor").value.trim();
-    persist(function(next){ next.meta.teacherName=teacher; next.meta.className=klasseS; next.meta.schoolName=school; next.meta.mentorName=mentor; }, {toast:"Gespeichert ✓"});
     ui.settingsOpen = false;
+    render();
+    saveSettingsRemote({teacherName:teacher, className:klasseS, schoolName:school, mentorName:mentor});
   } else if(act==="open-schedule"){
     ui.pendingPeriods = JSON.parse(JSON.stringify(state.periods||[]));
     ui.pendingSchedule = JSON.parse(JSON.stringify(state.schedule||{}));
@@ -1274,10 +1424,11 @@ function handleAction(act, e, t){
     syncScheduleDialogFromDom();
     var finalPeriods = ui.pendingPeriods;
     var finalSchedule = ui.pendingSchedule;
-    persist(function(next){ next.periods = finalPeriods; next.schedule = finalSchedule; }, {toast:"Stundenplan gespeichert ✓"});
     ui.scheduleEditorOpen = false;
     ui.pendingPeriods = null;
     ui.pendingSchedule = null;
+    render();
+    saveSchedule(finalPeriods, finalSchedule);
   } else if(act==="reload-page"){
     location.reload();
   } else if(act==="open-export"){
@@ -1379,67 +1530,7 @@ function renderScheduleBodyOnly(){
 }
 
 /* ================= init ================= */
-function restoreAfterReload(){
-  try{
-    var raw = sessionStorage.getItem("lp_restore");
-    if(raw){
-      var data = JSON.parse(raw);
-      if(Date.now() - data.ts < 15000){
-        if(data.week) ui.currentWeek = data.week;
-        if(data.drawerKey) ui.openDrawerKey = data.drawerKey;
-        if(data.toast) ui.toast = data.toast;
-      }
-      sessionStorage.removeItem("lp_restore");
-    }
-  }catch(e){}
-}
-
-function initLocalFallback(){
-  try{
-    var raw = localStorage.getItem("lp_state_v1");
-    if(raw){ state = JSON.parse(raw); }
-  }catch(e){}
-  mode = "local";
-  canEdit = true;
-  editStatusKnown = true;
-}
-
-restoreAfterReload();
-render();
-
-if(window.claude && typeof window.claude.use === "function"){
-  Promise.all([
-    window.claude.use("artifact").catch(function(){ return null; }),
-    window.claude.use("user").catch(function(){ return null; })
-  ]).then(function(results){
-    artifactCap = results[0];
-    userCap = results[1];
-    if(artifactCap){
-      mode = "synced";
-      var editPromise = userCap ? userCap.canEdit().catch(function(){return false;}) : Promise.resolve(false);
-      editPromise.then(function(ce){
-        canEdit = !!ce;
-        editStatusKnown = true;
-        render();
-      });
-    } else {
-      initLocalFallback();
-      render();
-    }
-  }).catch(function(){
-    initLocalFallback();
-    render();
-  });
-  setTimeout(function(){
-    if(!editStatusKnown){
-      initLocalFallback();
-      render();
-    }
-  }, 10500);
-} else {
-  initLocalFallback();
-  render();
-}
+boot();
 
 })();
 </script>
