@@ -142,6 +142,8 @@ textarea, input, select{font-family:inherit; font-size:inherit; color:var(--text
 .status-dot.is-taught::after{content:"✓"; position:absolute; inset:-6px; display:flex; align-items:center; justify-content:center; font-size:9px; color:var(--accent); font-weight:700;}
 .lesson-cell.is-planned{background:var(--good-soft);}
 .lesson-cell.is-planned:hover{filter:brightness(0.97);}
+.lesson-cell.is-inprogress{background:repeating-linear-gradient(135deg, var(--good-soft) 0 10px, var(--surface) 10px 20px);}
+.lesson-cell.is-inprogress:hover{filter:brightness(0.97);}
 .lesson-cell.is-taught{background:var(--accent-soft);}
 .lesson-cell.is-taught:hover{filter:brightness(0.97);}
 .lesson-cell.has-mark{border-left-width:5px; border-left-style:solid;}
@@ -165,10 +167,14 @@ textarea, input, select{font-family:inherit; font-size:inherit; color:var(--text
 .lp21row{display:flex; gap:8px; align-items:flex-end;}
 .lp21row .field{flex:1;}
 .lp21-link-out{display:inline-flex; align-items:center; gap:5px; font-size:.82rem; margin-top:6px;}
-.ablauf-row{display:grid; grid-template-columns:60px 1fr 1fr 2fr auto; gap:6px; align-items:start; margin-bottom:8px;}
+.ablauf-row{display:grid; grid-template-columns:22px 60px 1fr 1fr 2fr auto; gap:6px; align-items:start; margin-bottom:8px;}
 .ablauf-row input, .ablauf-row select, .ablauf-row textarea{width:100%; border:1px solid var(--border); border-radius:var(--radius-s); padding:6px 8px; background:var(--surface); font-size:.85rem;}
 .ablauf-row textarea{min-height:36px; resize:vertical;}
-.ablauf-head{display:grid; grid-template-columns:60px 1fr 1fr 2fr auto; gap:6px; font-size:.7rem; text-transform:uppercase; letter-spacing:.3px; color:var(--text-muted); margin-bottom:6px;}
+.ablauf-head{display:grid; grid-template-columns:22px 60px 1fr 1fr 2fr auto; gap:6px; font-size:.7rem; text-transform:uppercase; letter-spacing:.3px; color:var(--text-muted); margin-bottom:6px;}
+.ablauf-drag{cursor:grab; color:var(--text-muted); display:flex; align-items:center; justify-content:center; padding-top:6px; user-select:none;}
+.ablauf-drag:active{cursor:grabbing;}
+.ablauf-row.dragging{opacity:.4;}
+.ablauf-row.drag-over{outline:2px dashed var(--accent); outline-offset:2px; border-radius:var(--radius-s);}
 .ablauf-static{border-left:3px solid var(--accent-soft); padding:8px 0 8px 12px; margin-bottom:8px;}
 .ablauf-static .ph{font-weight:700; font-size:.82rem;}
 .ablauf-static .mi{font-family:"IBM Plex Mono",monospace; font-size:.74rem; color:var(--text-muted);}
@@ -466,6 +472,7 @@ var state = null;
 var mode = "loading";      // "loading" | "login" | "synced" | "shared" | "error"
 var canEdit = false;
 var bootError = null;
+var dragState = { fromIdx: null };
 
 var ui = {
   currentWeek: localStorage.getItem("lp_currentWeek") || isoWeekValueFromDate(new Date()),
@@ -546,7 +553,8 @@ function lessonStatus(lesson){
   if(!lesson) return "empty";
   if(lesson.taught) return "taught";
   var hasContent = (lesson.lernziele && lesson.lernziele.trim()) || (lesson.ablauf && lesson.ablauf.length) || (lesson.material && lesson.material.trim());
-  return hasContent ? "planned" : "empty";
+  if(!hasContent) return "empty";
+  return lesson.inProgress ? "inprogress" : "planned";
 }
 function allSubjects(){
   var set = {};
@@ -593,7 +601,7 @@ function assembleState(metaRow, periodRows, cellRows, lessonRows, noteRows, libR
     s.lessons[lessonKey(l.week,l.day,l.period_id)] = {
       subject:l.subject||"", klasse:l.klasse||"", lp21Text:l.lp21_text||"", lp21Link:l.lp21_link||"",
       lernziele:l.lernziele||"", ablauf:l.ablauf||[], material:l.material||"", notizen:l.notizen||"",
-      taught:!!l.taught, updatedAt:l.updated_at||null
+      taught:!!l.taught, inProgress:!!l.in_progress, updatedAt:l.updated_at||null
     };
   });
   (noteRows||[]).forEach(function(n){ s.dayNotes[n.week+"_"+n.day] = n.note||""; });
@@ -672,7 +680,7 @@ function saveLesson(key, fields){
     week:week, day:day, period_id:periodId,
     subject:fields.subject, klasse:fields.klasse, lp21_text:fields.lp21Text, lp21_link:fields.lp21Link,
     lernziele:fields.lernziele, ablauf:fields.ablauf, material:fields.material, notizen:fields.notizen,
-    taught:fields.taught, updated_at:nowIso
+    taught:fields.taught, in_progress:fields.inProgress, updated_at:nowIso
   };
   var libStep = Promise.resolve();
   if(fields.lp21Text){
@@ -692,7 +700,7 @@ function saveLesson(key, fields){
     libStep
   ]).then(function(results){
     if(results[0].error) throw results[0].error;
-    state.lessons[key] = {subject:fields.subject, klasse:fields.klasse, lp21Text:fields.lp21Text, lp21Link:fields.lp21Link, lernziele:fields.lernziele, ablauf:fields.ablauf, material:fields.material, notizen:fields.notizen, taught:fields.taught, updatedAt:nowIso};
+    state.lessons[key] = {subject:fields.subject, klasse:fields.klasse, lp21Text:fields.lp21Text, lp21Link:fields.lp21Link, lernziele:fields.lernziele, ablauf:fields.ablauf, material:fields.material, notizen:fields.notizen, taught:fields.taught, inProgress:fields.inProgress, updatedAt:nowIso};
     render();
     showToast("Gespeichert ✓");
   }).catch(function(err){
@@ -930,10 +938,11 @@ function renderTimetable(){
       var subject = (lesson && lesson.subject) || entry.subject || "—";
       var klasse = (lesson && lesson.klasse) || entry.klasse || "";
       var status = lessonStatus(lesson);
-      var cellStatusClass = status==="planned" ? " is-planned" : (status==="taught" ? " is-taught" : "");
+      var cellStatusClass = status==="planned" ? " is-planned" : (status==="inprogress" ? " is-inprogress" : (status==="taught" ? " is-taught" : ""));
+      var dotClass = (status==="planned"||status==="inprogress") ? " is-planned" : (status==="taught" ? " is-taught" : "");
       var mark = entry.mark || null;
       html += '<div class="lesson-cell'+cellStatusClass+(mark?' has-mark':'')+'" '+(mark?'style="border-left-color:'+escAttr(mark.color)+';"':'')+' tabindex="0" role="button" data-act="open-lesson" data-key="'+escAttr(key)+'" data-day="'+d.key+'" data-period="'+escAttr(period.id)+'" aria-label="'+escAttr(d.label+" "+subject)+(mark&&mark.label?(" – "+mark.label):"")+'"'+(mark&&mark.label?' title="'+escAttr(mark.label)+'"':'')+'>'+
-        '<span class="status-dot'+(status==="planned"?" is-planned":"")+(status==="taught"?" is-taught":"")+'"></span>'+
+        '<span class="status-dot'+dotClass+'"></span>'+
         '<span class="subj">'+esc(subject)+'</span>'+
         (klasse? '<span class="klasse">'+esc(klasse)+'</span>' : '')+
         (mark&&mark.label? '<span class="mark-chip" style="color:'+escAttr(mark.color)+';border-color:'+escAttr(mark.color)+';background:'+escAttr(mark.color)+'22;">'+esc(mark.label)+'</span>' : '')+
@@ -1007,6 +1016,7 @@ function renderDrawerInto(app){
       '<div class="field"><label>Material</label><textarea id="f-material" placeholder="Ein Material pro Zeile" '+(ro?'disabled':'')+'>'+esc(lesson.material||"")+'</textarea></div>'+
       '<div class="field"><label>Notizen</label><textarea id="f-notizen" placeholder="Beobachtungen, Reflexion, Hinweise für die Praxislehrperson …" '+(ro?'disabled':'')+'>'+esc(lesson.notizen||"")+'</textarea></div>'+
 
+      (ro? '' : '<label style="display:flex;align-items:center;gap:8px;font-size:.85rem;"><input type="checkbox" id="f-inprogress" '+(lesson.inProgress?'checked':'')+'> Noch in Bearbeitung</label>')+
       (ro? '' : '<label style="display:flex;align-items:center;gap:8px;font-size:.85rem;"><input type="checkbox" id="f-taught" '+(lesson.taught?'checked':'')+'> Lektion wurde durchgeführt</label>')+
     '</div>'+
     '<div class="dialog-foot">'+
@@ -1029,9 +1039,10 @@ function renderAblauf(ablauf, ro){
         '<p>'+esc(row.beschreibung||"")+'</p></div>';
     }).join("");
   }
-  var head = '<div class="ablauf-head"><span>Min.</span><span>Phase</span><span>Sozialform</span><span>Beschreibung</span><span></span></div>';
+  var head = '<div class="ablauf-head"><span></span><span>Min.</span><span>Phase</span><span>Sozialform</span><span>Beschreibung</span><span></span></div>';
   var rows = ablauf.map(function(row, i){
     return '<div class="ablauf-row" data-idx="'+i+'">'+
+      '<span class="ablauf-drag" draggable="true" title="Ziehen zum Verschieben" aria-label="Sequenz verschieben">⠿</span>'+
       '<input type="number" min="0" class="ab-minutes" value="'+escAttr(row.minutes||"")+'">'+
       '<select class="ab-phase">'+PHASES.map(function(p){return '<option '+(p===row.phase?'selected':'')+'>'+p+'</option>';}).join("")+'</select>'+
       '<select class="ab-sozial">'+SOZIALFORMEN.map(function(s){return '<option '+(s===row.sozialform?'selected':'')+'>'+s+'</option>';}).join("")+'</select>'+
@@ -1330,6 +1341,40 @@ function wireEvents(app){
     qs(".dr-mark-color", wrap).disabled = !on;
     qs(".dr-mark-label", wrap).disabled = !on;
   });
+  on(app, "dragstart", ".ablauf-drag", function(e, t){
+    var row = t.closest(".ablauf-row");
+    dragState.fromIdx = parseInt(row.getAttribute("data-idx"),10);
+    row.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+    try{ e.dataTransfer.setData("text/plain", String(dragState.fromIdx)); }catch(err){}
+  });
+  on(app, "dragend", ".ablauf-drag", function(e, t){
+    var row = t.closest(".ablauf-row");
+    if(row) row.classList.remove("dragging");
+    qsa(".ablauf-row.drag-over", app).forEach(function(r){ r.classList.remove("drag-over"); });
+    dragState.fromIdx = null;
+  });
+  on(app, "dragover", ".ablauf-row", function(e, t){
+    if(dragState.fromIdx==null) return;
+    e.preventDefault();
+    t.classList.add("drag-over");
+  });
+  on(app, "dragleave", ".ablauf-row", function(e, t){
+    t.classList.remove("drag-over");
+  });
+  on(app, "drop", ".ablauf-row", function(e, t){
+    if(dragState.fromIdx==null) return;
+    e.preventDefault();
+    t.classList.remove("drag-over");
+    var toIdx = parseInt(t.getAttribute("data-idx"),10);
+    var fromIdx = dragState.fromIdx;
+    if(fromIdx===toIdx) return;
+    var drawer = qs(".lesson-dialog");
+    var rows = collectAblaufFromDom(drawer);
+    var moved = rows.splice(fromIdx,1)[0];
+    rows.splice(toIdx,0,moved);
+    reRenderAblauf(rows);
+  });
   app.addEventListener("submit", function(e){
     var form = e.target.closest("#login-form");
     if(!form) return;
@@ -1364,10 +1409,12 @@ function handleAction(act, e, t){
     var notizen = qs("#f-notizen").value;
     var taughtEl = qs("#f-taught");
     var taught = taughtEl ? taughtEl.checked : false;
+    var inProgressEl = qs("#f-inprogress");
+    var inProgress = inProgressEl ? inProgressEl.checked : false;
     var ablauf = collectAblaufFromDom(drawer);
     ui.openDrawerKey = null;
     render();
-    saveLesson(key, {subject:subject, klasse:klasse, lp21Text:lp21Text, lp21Link:lp21Link, lernziele:lernziele, ablauf:ablauf, material:material, notizen:notizen, taught:taught});
+    saveLesson(key, {subject:subject, klasse:klasse, lp21Text:lp21Text, lp21Link:lp21Link, lernziele:lernziele, ablauf:ablauf, material:material, notizen:notizen, taught:taught, inProgress:inProgress});
   } else if(act==="clear-lesson"){
     var drawer2 = qs(".lesson-dialog");
     var key2 = drawer2.dataset.key;
