@@ -210,7 +210,9 @@ textarea, input, select{font-family:inherit; font-size:inherit; color:var(--text
 .banner.err{background:var(--danger-soft); color:var(--danger);}
 .print-sheet .ps-head{display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--text); padding-bottom:10px; margin-bottom:16px;}
 .print-sheet .ps-head h2{font-size:1.3rem;}
-.print-sheet .ps-lesson{border:1px solid var(--border); border-radius:var(--radius-m); padding:14px; margin-bottom:14px;}
+.print-sheet .ps-lesson{margin-bottom:14px; padding-top:12px;}
+.print-sheet .ps-lesson:first-child{padding-top:0;}
+.print-sheet .ps-lesson-card{border:1px solid var(--border); border-radius:var(--radius-m); padding:14px;}
 .print-sheet .ps-lesson h3{font-size:1rem; margin-bottom:2px;}
 .print-sheet .ps-lesson .ps-meta{font-size:.8rem; color:var(--text-muted); font-family:"IBM Plex Mono",monospace; margin-bottom:8px;}
 .print-sheet .ps-field{margin-bottom:8px;}
@@ -1009,7 +1011,7 @@ function lessonPrintBlock(subject, klasse, dateStr, timeStr, lesson){
       lesson.ablauf.map(function(r){ return '<tr><td>'+esc(r.minutes||"")+'</td><td>'+esc(r.phase||"")+'</td><td>'+esc(r.sozialform||"")+'</td><td>'+esc(r.beschreibung||"")+'</td></tr>'; }).join("")+
       '</tbody></table>';
   }
-  return '<div class="ps-lesson">'+
+  return '<div class="ps-lesson"><div class="ps-lesson-card">'+
     '<h3>'+esc(subject)+'</h3>'+
     '<div class="ps-meta">'+esc(dateStr)+' · '+esc(timeStr)+(klasse?(' · '+esc(klasse)):'')+'</div>'+
     (lesson.lp21Text ? '<div class="ps-field"><div class="l">LP21</div><div class="v">'+esc(lesson.lp21Text)+(lesson.lp21Link?(' — '+esc(lesson.lp21Link)):'')+'</div></div>' : '')+
@@ -1017,7 +1019,7 @@ function lessonPrintBlock(subject, klasse, dateStr, timeStr, lesson){
     '<div class="ps-field"><div class="l">Ablauf</div><div class="v">'+ablaufHtml+'</div></div>'+
     '<div class="ps-field"><div class="l">Material</div><div class="v">'+esc(lesson.material||"—")+'</div></div>'+
     (lesson.notizen ? '<div class="ps-field"><div class="l">Notizen</div><div class="v">'+esc(lesson.notizen)+'</div></div>' : '')+
-    '</div>';
+    '</div></div>';
 }
 
 function buildDayExport(dateVal, filter){
