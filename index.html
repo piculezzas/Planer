@@ -1142,6 +1142,12 @@ function buildSubjectExport(subject, fromWeek, toWeek, filter){
 }
 
 /* ================= events ================= */
+// Editing a lesson's content implies it's (still) in progress - only an
+// explicit, deliberate uncheck marks it as finished.
+function autoMarkInProgress(){
+  var box = qs("#f-inprogress");
+  if(box && !box.checked) box.checked = true;
+}
 function wireEvents(app){
   on(app, "click", "[data-act]", function(e, t){
     var act = t.getAttribute("data-act");
@@ -1149,6 +1155,13 @@ function wireEvents(app){
   });
   on(app, "keydown", ".lesson-cell", function(e, t){
     if(e.key==="Enter" || e.key===" "){ e.preventDefault(); t.click(); }
+  });
+  on(app, "input", ".lesson-dialog .dialog-body input, .lesson-dialog .dialog-body select, .lesson-dialog .dialog-body textarea", function(e, t){
+    if(t.id==="f-inprogress" || t.id==="f-taught") return;
+    autoMarkInProgress();
+  });
+  on(app, "change", ".lesson-dialog .dialog-body select", function(e, t){
+    autoMarkInProgress();
   });
   on(app, "change", "#f-lp21-pick", function(e, t){
     var id = t.value;
@@ -1274,11 +1287,13 @@ function handleAction(act, e, t){
     var rows = collectAblaufFromDom(drawer3);
     rows.push({minutes:5, phase:PHASES[0], sozialform:SOZIALFORMEN[0], beschreibung:""});
     reRenderAblauf(rows);
+    autoMarkInProgress();
   } else if(act==="ablauf-remove"){
     var drawer4 = qs(".lesson-dialog");
     var rows2 = collectAblaufFromDom(drawer4);
     rows2.splice(parseInt(t.getAttribute("data-idx"),10),1);
     reRenderAblauf(rows2);
+    autoMarkInProgress();
   } else if(act==="lp21-lib-remove"){
     var libId = t.getAttribute("data-id");
     removeLibEntry(libId);
