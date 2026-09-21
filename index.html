@@ -1450,6 +1450,28 @@ function renderScheduleBodyOnly(){
 
 /* ================= init ================= */
 wireEvents(document.getElementById("app")); // once - #app is a stable node across renders, event delegation handles the rest
+
+// Catch a session that quietly died (idle tab, failed token refresh) as soon
+// as possible - surface the login screen right away instead of only finding
+// out once the user has typed something and tries to save.
+function handleSessionGone(){
+  if(mode !== "synced") return;
+  state = null; mode = "login"; canEdit = false;
+  ui.loginError = "Deine Sitzung ist abgelaufen. Bitte erneut anmelden.";
+  render();
+}
+if(sb){
+  sb.auth.onAuthStateChange(function(event, session){
+    if(event === "SIGNED_OUT" || (mode === "synced" && !session)) handleSessionGone();
+  });
+  document.addEventListener("visibilitychange", function(){
+    if(document.visibilityState !== "visible" || mode !== "synced" || shareToken) return;
+    withTimeout(sb.auth.getSession(), 15000).then(function(res){
+      if(!(res.data && res.data.session)) handleSessionGone();
+    }).catch(function(err){ console.error(err); });
+  });
+}
+
 boot();
 
 })();
