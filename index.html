@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Lektionenplaner</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Nunito:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" onerror="window.__lpSupabaseLoadFailed=true"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 :root{
@@ -260,6 +260,7 @@ var dragState = { fromIdx: null };
 var ui = {
   currentWeek: localStorage.getItem("lp_currentWeek") || isoWeekValueFromDate(new Date()),
   openDrawerKey: null,
+  openDrawerDraft: null, // {key, fields} - keeps typed values visible if a save fails or a toast forces a re-render
   scheduleEditorOpen: false,
   exportDialog: null,   // "day" | "subject" | null
   printContent: null,   // {title, html}
@@ -361,8 +362,27 @@ function allSubjects(){
 /* ================= supabase ================= */
 var SUPABASE_URL = "https://gtjeqyxnmxtserflwxfu.supabase.co";
 var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0amVxeXhubXh0c2VyZmx3eGZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5MTQ0MDgsImV4cCI6MjEwNTQ5MDQwOH0.y9KqYtgJo5y7LIP8LJbjdi6P20xf6IiZE189r4ks7iA";
-var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 var shareToken = new URLSearchParams(location.search).get("token");
+
+function withTimeout(promise, ms){
+  return new Promise(function(resolve, reject){
+    var timer = setTimeout(function(){ reject(new Error("Zeitüberschreitung")); }, ms);
+    promise.then(function(v){ clearTimeout(timer); resolve(v); }, function(err){ clearTimeout(timer); reject(err); });
+  });
+}
+
+// Runs a save action so its UI (button/dialog) can never get stuck: catches
+// both synchronous throws and hangs, always calling onDone(false) instead.
+function safeSave(fn, onDone){
+  var p;
+  try{ p = fn(); }catch(err){ p = Promise.reject(err); }
+  withTimeout(Promise.resolve(p), 20000).then(function(ok){ onDone(ok); }, function(err){
+    console.error(err);
+    showToast("Speichern fehlgeschlagen. Bitte erneut versuchen.", true);
+    onDone(false);
+  });
+}
 
 function assembleState(metaRow, periodRows, cellRows, lessonRows, noteRows, libRows){
   var s = {
@@ -425,8 +445,12 @@ function loadSharedState(token){
 
 function boot(){
   mode = "loading"; render();
+  if(!sb){
+    mode = "error"; bootError = "Die App konnte nicht vollständig geladen werden (Netzwerkproblem beim Laden der Skripte)."; render();
+    return;
+  }
   if(shareToken){
-    loadSharedState(shareToken).then(function(){
+    withTimeout(loadSharedState(shareToken), 15000).then(function(){
       mode = "shared"; canEdit = false; render();
     }).catch(function(err){
       console.error(err);
@@ -434,10 +458,10 @@ function boot(){
     });
     return;
   }
-  sb.auth.getSession().then(function(res){
+  withTimeout(sb.auth.getSession(), 15000).then(function(res){
     var session = res.data && res.data.session;
     if(!session){ mode = "login"; render(); return; }
-    return loadFullState().then(function(){
+    return withTimeout(loadFullState(), 15000).then(function(){
       mode = "synced"; canEdit = true; render();
     });
   }).catch(function(err){
@@ -462,7 +486,9 @@ function doLogout(){
 }
 
 /* ================= save actions ================= */
+var lessonWriteSeq = {}; // key -> sequence number of the most recently issued write (save or clear); guards against a late, stale response overwriting a newer one
 function saveLesson(key, fields){
+  var mySeq = (lessonWriteSeq[key] = (lessonWriteSeq[key]||0) + 1);
   var parts = key.split("_");
   var week = parts[0], day = parts[1], periodId = parts.slice(2).join("_");
   var nowIso = new Date().toISOString();
@@ -490,26 +516,33 @@ function saveLesson(key, fields){
     libStep
   ]).then(function(results){
     if(results[0].error) throw results[0].error;
-    state.lessons[key] = {subject:fields.subject, klasse:fields.klasse, lp21Text:fields.lp21Text, lp21Link:fields.lp21Link, lernziele:fields.lernziele, ablauf:fields.ablauf, material:fields.material, notizen:fields.notizen, taught:fields.taught, inProgress:fields.inProgress, updatedAt:nowIso};
-    render();
+    if(lessonWriteSeq[key] === mySeq){
+      state.lessons[key] = {subject:fields.subject, klasse:fields.klasse, lp21Text:fields.lp21Text, lp21Link:fields.lp21Link, lernziele:fields.lernziele, ablauf:fields.ablauf, material:fields.material, notizen:fields.notizen, taught:fields.taught, inProgress:fields.inProgress, updatedAt:nowIso};
+    }
     showToast("Gespeichert ✓");
+    return true;
   }).catch(function(err){
     console.error(err);
     showToast("Speichern fehlgeschlagen. Bitte erneut versuchen.", true);
+    return false;
   });
 }
 
 function clearLesson(key){
+  var mySeq = (lessonWriteSeq[key] = (lessonWriteSeq[key]||0) + 1);
   var parts = key.split("_");
   var week = parts[0], day = parts[1], periodId = parts.slice(2).join("_");
   return sb.from("lessons").delete().match({week:week, day:day, period_id:periodId}).then(function(res){
     if(res.error) throw res.error;
-    delete state.lessons[key];
-    render();
+    if(lessonWriteSeq[key] === mySeq){
+      delete state.lessons[key];
+    }
     showToast("Zurückgesetzt");
+    return true;
   }).catch(function(err){
     console.error(err);
     showToast("Zurücksetzen fehlgeschlagen.", true);
+    return false;
   });
 }
 
@@ -533,11 +566,12 @@ function saveSettingsRemote(fields){
     state.meta.className = fields.className;
     state.meta.schoolName = fields.schoolName;
     state.meta.mentorName = fields.mentorName;
-    render();
     showToast("Gespeichert ✓");
+    return true;
   }).catch(function(err){
     console.error(err);
     showToast("Speichern fehlgeschlagen.", true);
+    return false;
   });
 }
 
@@ -581,18 +615,27 @@ function saveSchedule(periods, schedule){
     if(res.error) throw res.error;
     state.periods = periods;
     state.schedule = schedule;
-    render();
     showToast("Stundenplan gespeichert ✓");
+    return true;
   }).catch(function(err){
     console.error(err);
     showToast("Speichern fehlgeschlagen.", true);
+    return false;
   });
 }
 
+var toastTimer = null;
 function showToast(msg, isErr){
   ui.toast = msg;
   render();
-  setTimeout(function(){ ui.toast = null; render(); }, 3200);
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){
+    ui.toast = null;
+    // just drop the toast node - a full render() here would blow away any
+    // dialog that's open in the meantime (reset scroll, lose unsaved toggles)
+    var el = qs(".toast");
+    if(el) el.remove();
+  }, 3200);
 }
 
 /* ================= rendering ================= */
@@ -603,7 +646,6 @@ function render(){
     console.error("Render-Fehler:", err);
     var app = document.getElementById("app");
     app.innerHTML = '<div class="wrap"><div class="banner err">Es ist ein unerwarteter Anzeigefehler aufgetreten.<br><button type="button" class="btn btn-sm" data-act="reload-page" style="margin-top:8px;">Seite neu laden</button><div class="mono" style="font-size:.7rem;margin-top:8px;opacity:.75;">'+esc(err && err.message || String(err))+'</div></div></div>';
-    wireEvents(app);
   }
 }
 function renderLoadingScreen(){
@@ -632,9 +674,9 @@ function renderLoginScreen(){
 
 function renderInner(){
   var app = document.getElementById("app");
-  if(mode === "loading"){ app.innerHTML = renderLoadingScreen(); wireEvents(app); return; }
-  if(mode === "login"){ app.innerHTML = renderLoginScreen(); wireEvents(app); return; }
-  if(mode === "error"){ app.innerHTML = renderErrorScreen(); wireEvents(app); return; }
+  if(mode === "loading"){ app.innerHTML = renderLoadingScreen(); return; }
+  if(mode === "login"){ app.innerHTML = renderLoginScreen(); return; }
+  if(mode === "error"){ app.innerHTML = renderErrorScreen(); return; }
 
   app.innerHTML = renderTopbar() + '<div class="wrap">' + renderToolbar() + renderTimetable() + '</div>';
 
@@ -649,7 +691,6 @@ function renderInner(){
     t.textContent = ui.toast;
     app.appendChild(t);
   }
-  wireEvents(app);
 }
 
 function roleLabel(){
@@ -753,7 +794,8 @@ function renderDrawerInto(app){
   var week = parts[0], day = parts[1], periodId = parts[2];
   var periodDef = getPeriodDef(periodId);
   var dayEntry = getDayEntry(day, periodId) || {subject:"",klasse:""};
-  var lesson = getLesson(ui.openDrawerKey) || {};
+  var draft = ui.openDrawerDraft;
+  var lesson = (draft && draft.key===ui.openDrawerKey) ? draft.fields : (getLesson(ui.openDrawerKey) || {});
   var dayLabel = WEEKDAYS.filter(function(d){return d.key===day;})[0].label;
   var dayIdx = WEEKDAYS.map(function(d){return d.key;}).indexOf(day);
   var date = dayIndexToDate(week, dayIdx);
@@ -1190,9 +1232,11 @@ function wireEvents(app){
 function handleAction(act, e, t){
   if(act==="open-lesson"){
     ui.openDrawerKey = t.getAttribute("data-key");
+    ui.openDrawerDraft = null;
     render();
   } else if(act==="close-drawer"){
     if(e.target !== t) return;
+    ui.openDrawerDraft = null;
     ui.openDrawerKey = null; render();
   } else if(act==="save-lesson"){
     var drawer = qs(".lesson-dialog");
@@ -1209,16 +1253,21 @@ function handleAction(act, e, t){
     var inProgressEl = qs("#f-inprogress");
     var inProgress = inProgressEl ? inProgressEl.checked : false;
     var ablauf = collectAblaufFromDom(drawer);
-    ui.openDrawerKey = null;
-    render();
-    saveLesson(key, {subject:subject, klasse:klasse, lp21Text:lp21Text, lp21Link:lp21Link, lernziele:lernziele, ablauf:ablauf, material:material, notizen:notizen, taught:taught, inProgress:inProgress});
+    var fields = {subject:subject, klasse:klasse, lp21Text:lp21Text, lp21Link:lp21Link, lernziele:lernziele, ablauf:ablauf, material:material, notizen:notizen, taught:taught, inProgress:inProgress};
+    ui.openDrawerDraft = {key:key, fields:fields};
+    t.disabled = true; t.textContent = "Speichert…";
+    safeSave(function(){ return saveLesson(key, fields); }, function(ok){
+      if(ok){ ui.openDrawerKey = null; ui.openDrawerDraft = null; }
+      render();
+    });
   } else if(act==="clear-lesson"){
     var drawer2 = qs(".lesson-dialog");
     var key2 = drawer2.dataset.key;
     if(confirm("Diese Lektionsplanung wirklich zurücksetzen?")){
-      ui.openDrawerKey = null;
-      render();
-      clearLesson(key2);
+      safeSave(function(){ return clearLesson(key2); }, function(ok){
+        if(ok){ ui.openDrawerKey = null; }
+        render();
+      });
     }
   } else if(act==="ablauf-add"){
     var drawer3 = qs(".lesson-dialog");
@@ -1245,9 +1294,11 @@ function handleAction(act, e, t){
     var klasseS = qs("#s-klasse").value.trim();
     var school = qs("#s-school").value.trim();
     var mentor = qs("#s-mentor").value.trim();
-    ui.settingsOpen = false;
-    render();
-    saveSettingsRemote({teacherName:teacher, className:klasseS, schoolName:school, mentorName:mentor});
+    t.disabled = true; t.textContent = "Speichert…";
+    safeSave(function(){ return saveSettingsRemote({teacherName:teacher, className:klasseS, schoolName:school, mentorName:mentor}); }, function(ok){
+      if(ok){ ui.settingsOpen = false; }
+      render();
+    });
   } else if(act==="open-schedule"){
     ui.pendingPeriods = JSON.parse(JSON.stringify(state.periods||[]));
     ui.pendingSchedule = JSON.parse(JSON.stringify(state.schedule||{}));
@@ -1268,11 +1319,11 @@ function handleAction(act, e, t){
     syncScheduleDialogFromDom();
     var finalPeriods = ui.pendingPeriods;
     var finalSchedule = ui.pendingSchedule;
-    ui.scheduleEditorOpen = false;
-    ui.pendingPeriods = null;
-    ui.pendingSchedule = null;
-    render();
-    saveSchedule(finalPeriods, finalSchedule);
+    t.disabled = true; t.textContent = "Speichert…";
+    safeSave(function(){ return saveSchedule(finalPeriods, finalSchedule); }, function(ok){
+      if(ok){ ui.scheduleEditorOpen = false; ui.pendingPeriods = null; ui.pendingSchedule = null; }
+      render();
+    });
   } else if(act==="reload-page"){
     location.reload();
   } else if(act==="open-export"){
@@ -1380,10 +1431,10 @@ function renderScheduleBodyOnly(){
   var existingBackdrop = qs(".dialog-backdrop:not(.print-modal-backdrop)");
   if(existingBackdrop) existingBackdrop.remove();
   renderScheduleDialogInto(app);
-  wireEvents(app);
 }
 
 /* ================= init ================= */
+wireEvents(document.getElementById("app")); // once - #app is a stable node across renders, event delegation handles the rest
 boot();
 
 })();
