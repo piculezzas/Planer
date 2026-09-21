@@ -162,7 +162,7 @@ textarea, input, select{font-family:inherit; font-size:inherit; color:var(--text
 .field label{display:block; font-weight:700; font-size:.8rem; margin-bottom:6px; text-transform:uppercase; letter-spacing:.4px; color:var(--text-muted);}
 .field .hint{font-size:.76rem; color:var(--text-muted); margin-top:4px;}
 .field input[type=text], .field input[type=url], .field input[type=email], .field input[type=password], .field textarea, .field select, .field input[type=number]{width:100%; border:1px solid var(--border); border-radius:var(--radius-s); padding:8px 10px; background:var(--surface);}
-.field textarea{resize:vertical; min-height:70px;}
+.field textarea{resize:none; min-height:70px; overflow:hidden;}
 .field input:disabled, .field textarea:disabled, .field select:disabled{background:var(--surface-2); color:var(--text-muted); cursor:not-allowed;}
 .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
 .lp21row{display:flex; gap:8px; align-items:flex-end;}
@@ -170,7 +170,7 @@ textarea, input, select{font-family:inherit; font-size:inherit; color:var(--text
 .lp21-link-out{display:inline-flex; align-items:center; gap:5px; font-size:.82rem; margin-top:6px;}
 .ablauf-row{display:grid; grid-template-columns:22px 60px 1fr 1fr 2fr auto; gap:6px; align-items:start; margin-bottom:8px;}
 .ablauf-row input, .ablauf-row select, .ablauf-row textarea{width:100%; border:1px solid var(--border); border-radius:var(--radius-s); padding:6px 8px; background:var(--surface); font-size:.85rem;}
-.ablauf-row textarea{min-height:36px; resize:vertical;}
+.ablauf-row textarea{min-height:36px; resize:none; overflow:hidden;}
 .ablauf-head{display:grid; grid-template-columns:22px 60px 1fr 1fr 2fr auto; gap:6px; font-size:.7rem; text-transform:uppercase; letter-spacing:.3px; color:var(--text-muted); margin-bottom:6px;}
 .ablauf-drag{cursor:grab; color:var(--text-muted); display:flex; align-items:center; justify-content:center; padding-top:6px; user-select:none;}
 .ablauf-drag:active{cursor:grabbing;}
@@ -322,6 +322,13 @@ function on(root, evt, sel, handler){
   });
 }
 function uid(){ return "id"+Math.random().toString(36).slice(2,10); }
+function autoGrowTextarea(el){
+  el.style.height = "auto";
+  el.style.height = el.scrollHeight + "px";
+}
+function autoGrowAll(root){
+  qsa(".field textarea, .ablauf-row textarea", root).forEach(autoGrowTextarea);
+}
 function isValidUrl(u){
   if(!u) return false;
   try{ var url = new URL(u); return url.protocol==="http:"||url.protocol==="https:"; }catch(e){ return false; }
@@ -811,6 +818,7 @@ function renderDrawerInto(app){
   '</div>';
   app.appendChild(bg);
   bg.querySelector(".lesson-dialog").dataset.key = ui.openDrawerKey;
+  autoGrowAll(bg);
 }
 
 function renderAblauf(ablauf, ro){
@@ -1121,6 +1129,9 @@ function wireEvents(app){
   on(app, "input", ".daynote-input", function(e, t){
     t.classList.toggle("has-content", t.value.trim()!=="");
   });
+  on(app, "input", ".field textarea, .ablauf-row textarea", function(e, t){
+    autoGrowTextarea(t);
+  });
   on(app, "change", ".dr-mark-on", function(e, t){
     var wrap = t.closest(".day-row-wrap");
     var on = t.checked;
@@ -1329,6 +1340,7 @@ function reRenderAblauf(rows){
   var addBtn = target.querySelector('[data-act="ablauf-add"]');
   var html = renderAblauf(rows, false);
   target.innerHTML = '<label>Ablauf</label>' + html + (addBtn ? '<button type="button" class="btn btn-sm" data-act="ablauf-add">+ Sequenz hinzufügen</button>' : '');
+  autoGrowAll(target);
 }
 
 function syncScheduleDialogFromDom(){
